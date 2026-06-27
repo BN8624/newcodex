@@ -20,3 +20,4 @@
 - `build/web/index.pck`의 Web 확인 팩을 다시 만들고 Tailscale HTTPS로 제공한 뒤 `https://node.tail3e9e21.ts.net:10000`에서 모바일 뷰포트 로드를 확인했다.
 - `C:\Users\USER\unknown`은 참고 기준으로만 비교했다. 실제 반영한 점은 프로젝트 이름, 게임 UI, 데이터 이름, 문서, Web 제목이 모두 한국어로 보여야 한다는 것이다.
 - 한국어 표시 정리 뒤 Godot 검증기를 다시 실행했고, Web 팩을 다시 만든 뒤 Tailscale HTTPS 응답을 확인했다.
+- unknown의 핵심 참고점은 `malgun.ttf`를 로컬에 두고 전체 Label과 Button에 적용하되 공개 저장소에서는 제외하는 방식이었다. newcodex도 같은 목적의 로컬 폰트 적용 경로를 추가했다.

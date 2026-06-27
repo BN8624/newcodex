@@ -2,3 +2,7 @@
 build/
 *.tmp
 *.translation
+
+# 로컬 Web 확인용 한글 폰트. 공개 저장소에는 올리지 않는다.
+malgun.ttf
+malgun.ttf.import

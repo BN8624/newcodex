@@ -10,8 +10,11 @@ const EffectsClass := preload("res://scripts/Effects.gd")
 const VerifierClass := preload("res://scripts/Verifier.gd")
 const BattleActorViewClass := preload("res://scripts/BattleActorView.gd")
 
+const KOREAN_FONT_PATH := "res://malgun.ttf"
+
 var state
 var combat
+var korean_font: Font
 
 var title_label: Label
 var subtitle_label: Label
@@ -50,7 +53,9 @@ func _ready() -> void:
 		return
 
 	custom_minimum_size = Vector2(540, 960)
+	_apply_korean_font_theme()
 	_build_ui()
+	_apply_korean_font_to(self)
 	_load_or_start()
 	_start_combat()
 	_setup_autosave()
@@ -540,3 +545,21 @@ func _sprite_panel(color: Color, radius: int) -> Panel:
 	var panel := Panel.new()
 	panel.add_theme_stylebox_override("panel", UIControllerClass.panel_style(color, Color(1, 1, 1, 0.22), radius))
 	return panel
+
+
+func _apply_korean_font_theme() -> void:
+	if not ResourceLoader.exists(KOREAN_FONT_PATH):
+		return
+	korean_font = load(KOREAN_FONT_PATH)
+	var root_theme := Theme.new()
+	root_theme.default_font = korean_font
+	theme = root_theme
+
+
+func _apply_korean_font_to(node: Node) -> void:
+	if korean_font == null:
+		return
+	if node is Label or node is Button:
+		node.add_theme_font_override("font", korean_font)
+	for child in node.get_children():
+		_apply_korean_font_to(child)

@@ -9,6 +9,7 @@
 - `scenes/Main.tscn`을 메인 장면으로 쓰는 Godot 4.x 프로젝트.
 - 모바일 우선 540x960 UI, 제목/상태, 공개 확인 배지, 전장, 체력바, 진행 경로, 진행도, 골드, 전투력, 성장 조작.
 - 엔진 내부에서 그린 수호자, 적, 보스, 클리어 관문 실루엣과 이동, 피격 플래시, 돌진, 흔들림, 피해 숫자.
+- 로컬 Web 확인용 `malgun.ttf`가 있으면 UI와 피해 숫자에 적용되는 한글 폰트 경로.
 - 15층 첫 지역, 순환 일반 적 네 종류, 15층 보스 하나.
 - 골드와 경험치 보상, 레벨 성장, 층 진행, 보스 클리어 배너, 클리어 후 목표.
 - 단계, 증가 비용, 구매 가능 상태, 즉시 효과가 있는 성장 버튼 5개.
@@ -62,6 +63,8 @@ CLI 실행 명령.
 
 `export_presets.cfg`에는 Web 스레드 지원을 끈 상태로 `build/web/index.html`을 대상으로 하는 Web 프리셋이 들어 있다. 현재 아이폰 확인 서버는 Godot 4.7로 다시 만든 프로젝트 팩을 Tailscale HTTPS 주소 `https://node.tail3e9e21.ts.net:10000`에서 제공한다.
 
+한글 폰트는 `malgun.ttf`를 로컬 프로젝트 루트에 두면 Web 팩에 포함된다. 이 파일은 상용 시스템 폰트라 공개 저장소에는 커밋하지 않도록 `.gitignore`에 제외했다.
+
 정식 `--export-release`는 아직 아래 위치에 Godot 4.7 내보내기 템플릿이 필요하다.
 
 ```text
@@ -98,6 +101,7 @@ VERIFY_RESULT: passed
 - Tailscale Serve의 HTTPS 주소 `https://node.tail3e9e21.ts.net:10000`에서 모바일 웹 확인을 수행했다.
 - 모바일 브라우저 390x844 뷰포트 확인에서 제목 `달샘 수호자`, Godot 캔버스 1개, 캔버스 전체 표시, Secure Context 오류 없음 상태를 확인했다.
 - 한국어 표시 수정 뒤 `--verify`를 다시 통과했고, `build/web/index.pck`를 다시 만든 뒤 HTTPS에서 `index.html`과 `index.pck` 응답을 확인했다.
+- UI 로드 확인에서 `res://malgun.ttf`와 가져온 fontdata가 정상 로드되는 로그를 확인했다.
 - 앱 내 브라우저 스크린샷 캡처는 시간 초과되어, 시각 확인은 DOM과 캔버스 확인 및 Godot 런타임 로드 확인으로 제한됐다.
 
 ## 9. 알려진 미구현 기능
