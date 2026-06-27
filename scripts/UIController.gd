@@ -27,10 +27,12 @@ static func button_style(color: Color, radius := 7) -> StyleBoxFlat:
 
 static func format_number(value: int) -> String:
 	var abs_value: int = abs(value)
-	if abs_value >= 1000000:
-		return str(round(float(value) / 10000.0) / 100.0) + "M"
-	if abs_value >= 1000:
-		return str(round(float(value) / 10.0) / 100.0) + "K"
+	if abs_value >= 1000000000000:
+		return str(round(float(value) / 10000000000.0) / 100.0) + "조"
+	if abs_value >= 100000000:
+		return str(round(float(value) / 1000000.0) / 100.0) + "억"
+	if abs_value >= 10000:
+		return str(round(float(value) / 100.0) / 100.0) + "만"
 	return str(value)
 
 

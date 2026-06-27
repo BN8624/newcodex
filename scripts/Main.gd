@@ -95,19 +95,19 @@ func _build_top_panel() -> void:
 	top.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.045, 0.06, 0.12, 0.96), Color(0.78, 0.9, 1.0, 0.22), 8))
 	add_child(top)
 
-	mode_label = _label("AUTO BATTLE", 12, Color(0.05, 0.07, 0.12))
+	mode_label = _label("자동 전투", 12, Color(0.05, 0.07, 0.12))
 	mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mode_label.position = Vector2(366, 10)
 	mode_label.size = Vector2(126, 22)
 	mode_label.add_theme_stylebox_override("normal", UIControllerClass.panel_style(Color(0.93, 0.84, 0.36, 0.96), Color(1, 1, 1, 0.15), 6))
 	top.add_child(mode_label)
 
-	title_label = _label("Moonwell Vanguard", 26, Color(0.98, 0.94, 0.75))
+	title_label = _label("달샘 수호자", 26, Color(0.98, 0.94, 0.75))
 	title_label.position = Vector2(14, 8)
 	title_label.size = Vector2(340, 30)
 	top.add_child(title_label)
 
-	subtitle_label = _label("Moonwell Ruins - launch candidate build", 12, Color(0.7, 0.8, 0.95))
+	subtitle_label = _label("달샘 폐허 공개 확인 빌드", 12, Color(0.7, 0.8, 0.95))
 	subtitle_label.position = Vector2(16, 34)
 	subtitle_label.size = Vector2(360, 18)
 	top.add_child(subtitle_label)
@@ -193,7 +193,7 @@ func _build_battle_panel() -> void:
 	enemy_hp_label.size = Vector2(348, 20)
 	battle_panel.add_child(enemy_hp_label)
 
-	boss_label = _label("BOSS APPROACHING", 24, Color(1.0, 0.38, 0.42))
+	boss_label = _label("보스 출현", 24, Color(1.0, 0.38, 0.42))
 	boss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	boss_label.position = Vector2(74, 114)
 	boss_label.size = Vector2(364, 34)
@@ -253,12 +253,12 @@ func _build_upgrade_panel() -> void:
 	bottom.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.07, 0.09, 0.16, 0.96), Color(0.8, 0.88, 1.0, 0.14), 8))
 	add_child(bottom)
 
-	var title := _label("Growth Shop", 20, Color(0.92, 0.96, 1.0))
+	var title := _label("성장 상점", 20, Color(0.92, 0.96, 1.0))
 	title.position = Vector2(14, 8)
 	title.size = Vector2(170, 28)
 	bottom.add_child(title)
 
-	var hint := _label("Buy upgrades as soon as they light up.", 13, Color(0.68, 0.76, 0.88))
+	var hint := _label("불이 켜진 성장은 바로 누르세요.", 13, Color(0.68, 0.76, 0.88))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	hint.position = Vector2(210, 12)
 	hint.size = Vector2(288, 20)
@@ -281,7 +281,7 @@ func _build_upgrade_panel() -> void:
 		upgrade_buttons[id] = button
 
 	var save_button := Button.new()
-	save_button.text = "Save"
+	save_button.text = "저장"
 	save_button.position = Vector2(14, 288)
 	save_button.size = Vector2(154, 30)
 	save_button.focus_mode = Control.FOCUS_NONE
@@ -289,14 +289,14 @@ func _build_upgrade_panel() -> void:
 	bottom.add_child(save_button)
 
 	reset_button = Button.new()
-	reset_button.text = "New Game"
+	reset_button.text = "새 게임"
 	reset_button.position = Vector2(178, 288)
 	reset_button.size = Vector2(154, 30)
 	reset_button.focus_mode = Control.FOCUS_NONE
 	reset_button.pressed.connect(_on_reset_pressed)
 	bottom.add_child(reset_button)
 
-	var next_label := _label("Next: second region after v0.1 clear", 13, Color(0.75, 0.8, 0.9))
+	var next_label := _label("다음 목표: 두 번째 지역", 13, Color(0.75, 0.8, 0.9))
 	next_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	next_label.position = Vector2(338, 288)
 	next_label.size = Vector2(160, 30)
@@ -310,7 +310,7 @@ func _load_or_start() -> void:
 		state.load_from_dict(data)
 	var offline_reward: int = state.apply_offline_reward(Time.get_unix_time_from_system())
 	if offline_reward > 0:
-		_show_reward("While away +" + UIControllerClass.format_number(offline_reward) + " Gold")
+		_show_reward("자리 비운 동안 골드 +" + UIControllerClass.format_number(offline_reward))
 		SaveManagerClass.save_game(state)
 
 
@@ -340,15 +340,15 @@ func _update_ui() -> void:
 
 	var stats: Dictionary = state.get_player_stats()
 	stage_label.text = GameDataClass.REGION_NAME + "  " + _stage_text()
-	gold_label.text = "Gold " + UIControllerClass.format_number(state.gold)
-	level_label.text = "Lv." + str(state.player_level) + "  EXP " + str(state.exp) + "/" + str(state.exp_to_next_level())
-	power_label.text = "Power " + UIControllerClass.format_number(int(stats["power"]))
-	progress_label.text = "Progress " + str(state.current_enemy_progress) + "/" + str(GameDataClass.KILLS_PER_STAGE)
+	gold_label.text = "골드 " + UIControllerClass.format_number(state.gold)
+	level_label.text = str(state.player_level) + "레벨  경험치 " + str(state.exp) + "/" + str(state.exp_to_next_level())
+	power_label.text = "전투력 " + UIControllerClass.format_number(int(stats["power"]))
+	progress_label.text = "진행 " + str(state.current_enemy_progress) + "/" + str(GameDataClass.KILLS_PER_STAGE)
 	goal_label.text = _goal_text()
 	enemy_name_label.text = state.enemy_data["name"]
 	enemy_tag_label.text = _enemy_tag_text()
 	enemy_hp_label.text = UIControllerClass.format_number(int(ceil(state.enemy_hp))) + " / " + UIControllerClass.format_number(int(state.enemy_max_hp))
-	player_hp_label.text = "HP " + UIControllerClass.format_number(int(ceil(state.player_hp))) + " / " + UIControllerClass.format_number(int(stats["max_hp"]))
+	player_hp_label.text = "체력 " + UIControllerClass.format_number(int(ceil(state.player_hp))) + " / " + UIControllerClass.format_number(int(stats["max_hp"]))
 	UIControllerClass.set_bar(enemy_hp_bar, state.enemy_hp, state.enemy_max_hp)
 	UIControllerClass.set_bar(player_hp_bar, state.player_hp, float(stats["max_hp"]))
 	UIControllerClass.set_bar(exp_bar, float(state.exp), float(state.exp_to_next_level()))
@@ -364,33 +364,33 @@ func _refresh_upgrade_button(id: String) -> void:
 	var upgrade := GameDataClass.get_upgrade(id)
 	var level := int(state.upgrade_levels.get(id, 0))
 	var cost: int = state.get_upgrade_cost(id)
-	var buy_text := "BUY" if state.can_purchase_upgrade(id) else "LOCKED"
-	button.text = "[" + buy_text + "] " + String(upgrade["name"]) + "  Lv." + str(level) + "   " + String(upgrade["desc"]) + "   Cost " + UIControllerClass.format_number(cost)
+	var buy_text := "구매 가능" if state.can_purchase_upgrade(id) else "골드 부족"
+	button.text = "[" + buy_text + "] " + String(upgrade["name"]) + "  " + str(level) + "단계   " + String(upgrade["desc"]) + "   비용 " + UIControllerClass.format_number(cost)
 	button.disabled = not state.can_purchase_upgrade(id)
 
 
 func _on_upgrade_pressed(id: String) -> void:
 	if state.purchase_upgrade(id):
-		EffectsClass.floating_text(self, "Upgrade!", Vector2(270, 642), Color(0.55, 1.0, 0.58), 24)
+		EffectsClass.floating_text(self, "성장 완료", Vector2(270, 642), Color(0.55, 1.0, 0.58), 24)
 		SaveManagerClass.save_game(state)
 		_update_ui()
 
 
 func _on_save_pressed() -> void:
 	if SaveManagerClass.save_game(state):
-		_show_reward("Saved")
+		_show_reward("저장 완료")
 
 
 func _on_reset_pressed() -> void:
 	if not reset_pending:
 		reset_pending = true
-		reset_button.text = "Confirm Reset"
-		_show_reward("Tap again to reset")
+		reset_button.text = "초기화 확인"
+		_show_reward("한 번 더 누르면 초기화")
 		var timer := get_tree().create_timer(3.0)
 		timer.timeout.connect(func():
 			reset_pending = false
 			if reset_button != null:
-				reset_button.text = "New Game"
+				reset_button.text = "새 게임"
 		)
 		return
 
@@ -398,12 +398,12 @@ func _on_reset_pressed() -> void:
 	SaveManagerClass.delete_save()
 	state.reset()
 	combat.start(state)
-	_show_reward("New run started")
+	_show_reward("새 여정 시작")
 	_update_ui()
 
 
 func _on_enemy_hit(amount: int, critical: bool) -> void:
-	var text := ("CRIT " if critical else "") + "-" + UIControllerClass.format_number(amount)
+	var text := ("치명타 " if critical else "") + "-" + UIControllerClass.format_number(amount)
 	var color := Color(1.0, 0.95, 0.45) if critical else Color(1.0, 0.45, 0.36)
 	EffectsClass.floating_text(battle_panel, text, enemy_sprite.position + Vector2(enemy_sprite.size.x * 0.5, 18), color, 24 if critical else 20)
 	EffectsClass.flash(enemy_sprite, Color(1.0, 0.88, 0.88), 0.1)
@@ -421,22 +421,22 @@ func _on_player_hit(amount: int) -> void:
 
 func _on_enemy_defeated(result: Dictionary) -> void:
 	var reward: Dictionary = result["reward"]
-	var message := "+" + UIControllerClass.format_number(int(reward["gold"])) + " Gold  +" + str(int(reward["exp"])) + " EXP"
+	var message := "골드 +" + UIControllerClass.format_number(int(reward["gold"])) + "  경험치 +" + str(int(reward["exp"]))
 	if bool(reward["leveled"]):
-		message += "  LEVEL UP"
+		message += "  레벨 상승"
 	_show_reward(message)
 	SaveManagerClass.save_game(state)
 	_update_ui()
 
 
 func _on_boss_cleared(result: Dictionary) -> void:
-	_show_clear_banner("REGION CLEAR\nMoonwell Ruins secured\nNext region coming soon")
+	_show_clear_banner("지역 클리어\n달샘 폐허 정화 완료\n다음 지역 준비 중")
 	SaveManagerClass.save_game(state)
 	_update_ui()
 
 
 func _on_player_down() -> void:
-	_show_reward("Guardian restored")
+	_show_reward("수호자 재정비")
 	_update_ui()
 
 
@@ -448,7 +448,7 @@ func _on_enemy_spawned() -> void:
 		enemy_sprite.setup("boss", color)
 		enemy_sprite.position = Vector2(286, 126)
 		enemy_sprite.size = Vector2(166, 184)
-		_show_reward("Boss Battle")
+		_show_reward("보스전 시작")
 	elif state.boss_clear_state:
 		enemy_sprite.setup("gate", color)
 		enemy_sprite.position = Vector2(314, 148)
@@ -481,26 +481,26 @@ func _show_clear_banner(text: String) -> void:
 
 func _stage_text() -> String:
 	if state.boss_clear_state:
-		return "CLEAR"
+		return "클리어"
 	if state.is_boss:
-		return "Stage " + str(GameDataClass.MAX_STAGE) + " Boss"
-	return "Stage " + str(state.current_stage) + "/" + str(GameDataClass.MAX_STAGE)
+		return str(GameDataClass.MAX_STAGE) + "층 보스"
+	return str(state.current_stage) + "/" + str(GameDataClass.MAX_STAGE) + "층"
 
 
 func _goal_text() -> String:
 	if state.boss_clear_state:
-		return "CLEAR - Dawn Gate secured"
+		return "클리어 - 새벽 관문 확보"
 	if state.is_boss:
-		return "Defeat the region boss"
-	return "Defeat " + str(GameDataClass.KILLS_PER_STAGE - state.current_enemy_progress) + " more to advance"
+		return "지역 보스를 처치하세요"
+	return str(GameDataClass.KILLS_PER_STAGE - state.current_enemy_progress) + "마리 더 처치하면 전진"
 
 
 func _enemy_tag_text() -> String:
 	if state.boss_clear_state:
-		return "Post-clear target - rewards continue"
+		return "클리어 이후 보상 대상"
 	if state.is_boss:
-		return "REGION BOSS - high reward"
-	return "Stage " + str(state.current_stage) + " enemy - auto combat active"
+		return "지역 보스 - 큰 보상"
+	return str(state.current_stage) + "층 적 - 자동 전투 중"
 
 
 func _stage_path_text() -> String:
@@ -514,7 +514,7 @@ func _stage_path_text() -> String:
 			path_text += "B" if state.is_boss else "O"
 		else:
 			path_text += "-"
-	return "Stage Path  " + path_text
+	return "진행 경로  " + path_text
 
 
 func _label(text: String, font_size: int, color: Color) -> Label:

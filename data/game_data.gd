@@ -3,39 +3,39 @@ extends RefCounted
 class_name GameData
 
 const SAVE_VERSION := 1
-const REGION_NAME := "Moonwell Ruins"
+const REGION_NAME := "달샘 폐허"
 const MAX_STAGE := 15
 const KILLS_PER_STAGE := 3
 const OFFLINE_REWARD_CAP_SECONDS := 7200
 
 const UPGRADES := {
 	"attack": {
-		"name": "Moon Blade",
-		"desc": "Damage",
+		"name": "달빛검",
+		"desc": "공격력",
 		"base_cost": 12,
 		"cost_growth": 1.18
 	},
 	"hp": {
-		"name": "Guardian Heart",
-		"desc": "Max HP",
+		"name": "수호의 심장",
+		"desc": "최대 체력",
 		"base_cost": 16,
 		"cost_growth": 1.18
 	},
 	"defense": {
-		"name": "Ward Plate",
-		"desc": "Defense",
+		"name": "결계 갑옷",
+		"desc": "방어력",
 		"base_cost": 18,
 		"cost_growth": 1.19
 	},
 	"speed": {
-		"name": "Quick Ritual",
-		"desc": "Attack speed",
+		"name": "신속 의식",
+		"desc": "공격 속도",
 		"base_cost": 24,
 		"cost_growth": 1.2
 	},
 	"gold": {
-		"name": "Gold Charm",
-		"desc": "Gold gain",
+		"name": "황금 부적",
+		"desc": "골드 획득",
 		"base_cost": 20,
 		"cost_growth": 1.18
 	}
@@ -43,7 +43,7 @@ const UPGRADES := {
 
 const ENEMIES := [
 	{
-		"name": "Crescent Wisp",
+		"name": "초승달 혼령",
 		"hp": 34,
 		"damage": 5,
 		"gold": 9,
@@ -51,7 +51,7 @@ const ENEMIES := [
 		"color": Color(0.45, 0.8, 1.0)
 	},
 	{
-		"name": "Moss Sentinel",
+		"name": "이끼 파수꾼",
 		"hp": 42,
 		"damage": 7,
 		"gold": 11,
@@ -59,7 +59,7 @@ const ENEMIES := [
 		"color": Color(0.42, 0.9, 0.45)
 	},
 	{
-		"name": "Amber Shade",
+		"name": "호박빛 그림자",
 		"hp": 52,
 		"damage": 9,
 		"gold": 13,
@@ -67,7 +67,7 @@ const ENEMIES := [
 		"color": Color(1.0, 0.65, 0.28)
 	},
 	{
-		"name": "Rune Shell",
+		"name": "룬 껍질수",
 		"hp": 64,
 		"damage": 11,
 		"gold": 16,
@@ -77,7 +77,7 @@ const ENEMIES := [
 ]
 
 const BOSS := {
-	"name": "Moonbound Colossus",
+	"name": "달그늘 거상",
 	"hp": 980,
 	"damage": 24,
 	"gold": 420,
@@ -86,7 +86,7 @@ const BOSS := {
 }
 
 const CLEAR_TARGET := {
-	"name": "Dawn Gate",
+	"name": "새벽 관문",
 	"hp": 260,
 	"damage": 4,
 	"gold": 35,

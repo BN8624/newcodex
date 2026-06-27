@@ -1,18 +1,19 @@
-# Checklist
+# 체크리스트
 
-- [x] Read AGENTS.md and inspect workspace.
-- [x] Define product spec before implementation.
-- [x] Create Godot project skeleton.
-- [x] Build 540x960 vertical mobile UI.
-- [x] Implement editable game data and runtime state.
-- [x] Implement auto combat, rewards, stage progress, and boss clear.
-- [x] Implement upgrades with immediate stat impact.
-- [x] Implement save, load, reset, and offline reward.
-- [x] Add lightweight visual feedback.
-- [x] Run available verification.
-- [x] Write BUILD_REPORT.md.
-- [x] Raise first-screen quality to public playtest candidate level.
-- [x] Add safer reset flow and clearer save state feedback.
-- [x] Add richer stage, enemy, boss, and reward presentation.
-- [x] Rebuild Web playtest package and verify on mobile HTTPS.
-- [x] Commit and push launch-candidate polish.
+- [x] AGENTS.md를 읽고 작업공간을 확인했다.
+- [x] 구현 전에 제품 사양을 정했다.
+- [x] Godot 프로젝트 골격을 만들었다.
+- [x] 540x960 세로형 모바일 UI를 만들었다.
+- [x] 수정 가능한 게임 데이터와 런타임 상태를 구현했다.
+- [x] 자동 전투, 보상, 층 진행, 보스 클리어를 구현했다.
+- [x] 즉시 효과가 있는 성장 기능을 구현했다.
+- [x] 저장, 불러오기, 초기화, 오프라인 보상을 구현했다.
+- [x] 가벼운 시각 피드백을 추가했다.
+- [x] 가능한 검증을 실행했다.
+- [x] BUILD_REPORT.md를 작성했다.
+- [x] 첫 화면 품질을 공개 확인 후보 수준으로 올렸다.
+- [x] 더 안전한 초기화 흐름과 명확한 저장 상태 피드백을 추가했다.
+- [x] 층, 적, 보스, 보상 표현을 보강했다.
+- [x] Web 확인 패키지를 다시 만들고 모바일 HTTPS에서 확인했다.
+- [x] 공개 확인 후보 보강분을 커밋하고 푸시했다.
+- [x] 게임명, UI, 데이터 이름, 문서를 한국어 표시 기준으로 정리했다.

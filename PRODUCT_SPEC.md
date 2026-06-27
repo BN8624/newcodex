@@ -1,40 +1,40 @@
 # PRODUCT_SPEC.md
 
-## 1. Game Title
+## 1. 게임 제목
 
-Moonwell Vanguard
+달샘 수호자
 
-## 2. One-Sentence Concept
+## 2. 한 문장 콘셉트
 
-A lone moon guardian automatically fights through ruined shrine stages, spends earned moon gold on growth, and defeats the sealed boss of the first region.
+달샘 폐허를 지키는 수호자가 자동 전투로 마물을 처치하고, 얻은 골드로 성장해 첫 지역의 봉인 보스를 쓰러뜨리는 세로형 방치 RPG.
 
-## 3. Core Loop
+## 3. 핵심 반복 구조
 
-Open the game, watch automatic combat, earn Moon Gold and EXP from defeated enemies, buy immediate stat upgrades, advance through 15 stages, challenge the Moonbound Colossus boss, clear the region, and keep progress through local save.
+게임을 열면 자동 전투가 시작되고, 적을 처치해 골드와 경험치를 얻고, 성장 버튼으로 즉시 강해지고, 15층 보스인 달그늘 거상을 처치해 지역을 클리어한다. 진행은 로컬 저장으로 유지된다.
 
-## 4. 540x960 Screen Layout
+## 4. 540x960 화면 구성
 
-- Top 0-150: title, stage, player level, gold, power, and progress.
-- Center 150-620: gradient battleground, hero silhouette, enemy silhouette, HP bars, damage numbers, reward popups, boss warning, and clear banner.
-- Bottom 620-960: five upgrade buttons plus save and reset controls.
+- 상단 0-150: 제목, 층, 레벨, 골드, 전투력, 진행도.
+- 중앙 150-620: 전장, 수호자 실루엣, 적 실루엣, 체력바, 피해 숫자, 보상 팝업, 보스 경고, 클리어 배너.
+- 하단 620-960: 성장 버튼 5개, 저장, 새 게임 버튼.
 
-## 5. Upgrade List
+## 5. 성장 목록
 
-- Moon Blade: increases attack damage.
-- Guardian Heart: increases max HP.
-- Ward Plate: reduces incoming damage.
-- Quick Ritual: increases attack speed.
-- Gold Charm: increases gold earned.
+- 달빛검: 공격력 증가.
+- 수호의 심장: 최대 체력 증가.
+- 결계 갑옷: 받는 피해 감소.
+- 신속 의식: 공격 속도 증가.
+- 황금 부적: 골드 획득 증가.
 
-## 6. Stage/Boss Structure
+## 6. 층과 보스 구조
 
-- One region: Moonwell Ruins.
-- Stages 1-14 rotate four normal enemy types.
-- Each stage requires three enemy defeats to advance.
-- Stage 15 is the boss encounter against the Moonbound Colossus.
-- Boss clear marks v0.1 complete and shows a next-region placeholder.
+- 첫 지역: 달샘 폐허.
+- 1-14층은 일반 적 네 종류가 순환 등장.
+- 각 층은 적 세 마리 처치 후 전진.
+- 15층은 달그늘 거상 보스전.
+- 보스 처치 후 v0.1 클리어 상태와 다음 지역 예고를 표시.
 
-## 7. Save Data Structure
+## 7. 저장 데이터 구조
 
 - `save_version`
 - `gold`
@@ -47,26 +47,26 @@ Open the game, watch automatic combat, earn Moon Gold and EXP from defeated enem
 - `last_play_time`
 - `settings`
 
-## 8. v0.1 Scope
+## 8. v0.1 범위
 
-- Godot 4.x project targeting Web export.
-- Portrait 540x960 layout.
-- Automatic combat with enemy pressure.
-- Damage numbers, hit flash, lunge feedback, reward popup, and boss clear popup.
-- Five upgrade buttons with scaling costs.
-- Local save/load, manual save, reset, periodic autosave, and capped offline reward.
-- Verification script for core state behavior.
-- In-engine drawn hero, enemy, boss, and clear target silhouettes so the first screen reads as a complete mobile idle RPG instead of a raw UI test.
-- Safer two-tap reset flow for public playtest builds.
+- Godot 4.x 웹 내보내기 대상 프로젝트.
+- 540x960 세로형 레이아웃.
+- 적 압박이 있는 자동 전투.
+- 피해 숫자, 피격 플래시, 돌진 피드백, 보상 팝업, 보스 클리어 팝업.
+- 비용이 증가하는 성장 버튼 5개.
+- 로컬 저장/불러오기, 수동 저장, 초기화, 주기적 자동 저장, 제한된 오프라인 보상.
+- 핵심 상태 동작 검증 스크립트.
+- 엔진 내부에서 그리는 수호자, 적, 보스, 클리어 대상 실루엣.
+- 공개 확인 빌드를 위한 2단계 초기화 흐름.
 
-## 9. Explicitly Excluded Features
+## 9. 명시적으로 제외한 기능
 
-Inventory, equipment, gacha, character collection, skill tree, quests, multiple regions, ads, IAP, login, server, rankings, cloud save, daily missions, achievements, external art assets, and full audio are excluded from v0.1.
+인벤토리, 장비, 뽑기, 캐릭터 수집, 스킬 트리, 퀘스트, 대규모 다지역, 광고, 인앱결제, 로그인, 서버, 랭킹, 클라우드 저장, 일일 임무, 업적, 외부 아트 에셋, 정식 오디오는 v0.1에서 제외한다.
 
-## 10. Next-Update Candidates
+## 10. 다음 업데이트 후보
 
-- Second region with two new enemy families.
-- Lightweight equipment slots.
-- Skill cooldown button.
-- Generated simple sound effects.
-- Second-region content slice and final store packaging.
+- 두 번째 지역과 새 적군.
+- 가벼운 장비 슬롯.
+- 재사용 대기시간이 있는 스킬 버튼.
+- 간단한 자체 생성 효과음.
+- 두 번째 지역 콘텐츠 조각과 최종 스토어 패키징.

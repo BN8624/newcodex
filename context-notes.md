@@ -1,20 +1,22 @@
-# Context Notes
+# 작업 맥락 기록
 
 ## 2026-06-27
 
-- Workspace started with only `AGENTS.md`; Git is not initialized.
-- Chosen game concept: `Moonwell Vanguard`, a vertical idle RPG about a small guardian clearing moonlit ruins.
-- Scope is fixed to one region, 15 stages, 5 upgrades, 4 normal enemy types, one boss, local save, and simple offline gold.
-- Boss naming uses `Moonbound Colossus` to keep the temporary art direction generic and replaceable.
-- Implementation will favor dynamic UI from `Main.gd` to keep `Main.tscn` small while still separating game data, state, combat, save, effects, and verification scripts.
-- Godot 4.7 console executable was found at `C:\Users\USER\godot-engine\Godot_v4.7-stable_win64_console.exe`.
-- `godot --headless --path ... -- --verify` passed after removing fragile custom type annotations and Variant inference warnings.
+- 작업공간은 `AGENTS.md`만 있는 상태에서 시작했다.
+- 선택한 게임 콘셉트는 달빛 폐허를 정화하는 수호자를 다룬 한국어 세로형 방치 RPG `달샘 수호자`다.
+- 범위는 한 지역, 15층, 성장 5종, 일반 적 4종, 보스 1종, 로컬 저장, 간단한 오프라인 골드로 고정했다.
+- 보스 이름은 `달그늘 거상`으로 정해 임시 아트 방향을 일반적이고 교체 가능한 상태로 유지했다.
+- 구현은 `Main.gd`에서 동적 UI를 만들되, 게임 데이터, 상태, 전투, 저장, 효과, 검증 스크립트는 분리하는 방향으로 잡았다.
+- Godot 4.7 콘솔 실행 파일은 `C:\Users\USER\godot-engine\Godot_v4.7-stable_win64_console.exe`에서 확인했다.
+- 취약한 커스텀 타입 표기와 Variant 추론 경고를 제거한 뒤 `godot --headless --path ... -- --verify`가 통과했다.
 
-## 2026-06-27 Release-Candidate Correction
+## 2026-06-27 공개 확인 후보 수정
 
-- The previous build was only an MVP/playtest scaffold and was not acceptable as a user-facing release candidate.
-- Immediate correction scope: improve the first screen, make the combat view feel like a complete idle RPG screen, add safer reset UX, make stage/boss/reward communication clearer, update Web playtest packaging, verify on HTTPS mobile viewport, then commit and push.
-- No new external art or paid services will be introduced; polish stays in-engine so the project remains self-contained.
-- Added `BattleActorView.gd` to draw hero, enemy, boss, and clear-gate silhouettes in-engine.
-- Updated the main screen with an auto-battle badge, stage goal badge, enemy tag, stage path, clearer shop copy, and two-tap reset.
-- Rebuilt the Web playtest pack at `build/web/index.pck`, served through Tailscale HTTPS, and verified mobile viewport load at `https://node.tail3e9e21.ts.net:10000`.
+- 이전 빌드는 MVP와 확인용 골격에 가까워 사용자에게 공개 확인 후보로 내밀기에는 부족했다.
+- 즉시 수정 범위는 첫 화면 개선, 완성된 방치 RPG처럼 보이는 전투 화면, 더 안전한 초기화 UX, 더 명확한 층과 보스 및 보상 전달, Web 확인 패키지 갱신, HTTPS 모바일 뷰포트 검증, 커밋과 푸시다.
+- 새 외부 아트나 유료 서비스는 도입하지 않고, 프로젝트가 자체 포함 상태를 유지하도록 엔진 내부 표현으로 보강했다.
+- `BattleActorView.gd`를 추가해 수호자, 적, 보스, 클리어 관문 실루엣을 엔진 내부에서 그리게 했다.
+- 메인 화면에 자동 전투 배지, 층 목표 배지, 적 태그, 층 경로, 더 명확한 상점 문구, 2단계 초기화를 추가했다.
+- `build/web/index.pck`의 Web 확인 팩을 다시 만들고 Tailscale HTTPS로 제공한 뒤 `https://node.tail3e9e21.ts.net:10000`에서 모바일 뷰포트 로드를 확인했다.
+- `C:\Users\USER\unknown`은 참고 기준으로만 비교했다. 실제 반영한 점은 프로젝트 이름, 게임 UI, 데이터 이름, 문서, Web 제목이 모두 한국어로 보여야 한다는 것이다.
+- 한국어 표시 정리 뒤 Godot 검증기를 다시 실행했고, Web 팩을 다시 만든 뒤 Tailscale HTTPS 응답을 확인했다.
