@@ -1,0 +1,450 @@
+# 540x960 세로형 idle RPG 화면과 게임 루프를 연결하는 메인 컨트롤러
+extends Control
+
+const GameDataClass := preload("res://data/game_data.gd")
+const GameStateClass := preload("res://scripts/GameState.gd")
+const CombatControllerClass := preload("res://scripts/CombatController.gd")
+const SaveManagerClass := preload("res://scripts/SaveManager.gd")
+const UIControllerClass := preload("res://scripts/UIController.gd")
+const EffectsClass := preload("res://scripts/Effects.gd")
+const VerifierClass := preload("res://scripts/Verifier.gd")
+
+var state
+var combat
+
+var title_label: Label
+var stage_label: Label
+var gold_label: Label
+var level_label: Label
+var power_label: Label
+var progress_label: Label
+var enemy_name_label: Label
+var enemy_hp_label: Label
+var player_hp_label: Label
+var boss_label: Label
+var reward_label: Label
+var clear_label: Label
+var enemy_hp_bar: ProgressBar
+var player_hp_bar: ProgressBar
+var exp_bar: ProgressBar
+var battle_panel: Panel
+var hero_sprite: Panel
+var enemy_sprite: Panel
+var upgrade_buttons := {}
+var autosave_timer: Timer
+var ui_refresh_timer := 0.0
+
+
+func _ready() -> void:
+	if OS.get_cmdline_user_args().has("--verify"):
+		var ok := VerifierClass.run()
+		get_tree().quit(0 if ok else 1)
+		return
+
+	custom_minimum_size = Vector2(540, 960)
+	_build_ui()
+	_load_or_start()
+	_start_combat()
+	_setup_autosave()
+	_update_ui()
+
+
+func _process(delta: float) -> void:
+	ui_refresh_timer += delta
+	if ui_refresh_timer >= 0.12:
+		ui_refresh_timer = 0.0
+		_update_ui()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and state != null:
+		SaveManagerClass.save_game(state)
+
+
+func _build_ui() -> void:
+	var bg_texture := GradientTexture2D.new()
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color(0.06, 0.08, 0.16))
+	gradient.set_color(1, Color(0.11, 0.22, 0.34))
+	bg_texture.gradient = gradient
+	bg_texture.fill_from = Vector2(0, 0)
+	bg_texture.fill_to = Vector2(0, 1)
+
+	var bg := TextureRect.new()
+	bg.texture = bg_texture
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+
+	_build_top_panel()
+	_build_battle_panel()
+	_build_upgrade_panel()
+
+
+func _build_top_panel() -> void:
+	var top := Panel.new()
+	top.position = Vector2(14, 14)
+	top.size = Vector2(512, 132)
+	top.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.08, 0.1, 0.2, 0.94), Color(0.6, 0.82, 1.0, 0.18), 8))
+	add_child(top)
+
+	title_label = _label("Moonwell Vanguard", 28, Color(0.98, 0.94, 0.75))
+	title_label.position = Vector2(14, 8)
+	title_label.size = Vector2(484, 34)
+	top.add_child(title_label)
+
+	stage_label = _label("", 18, Color(0.82, 0.9, 1.0))
+	stage_label.position = Vector2(16, 46)
+	stage_label.size = Vector2(240, 24)
+	top.add_child(stage_label)
+
+	gold_label = _label("", 18, Color(1.0, 0.86, 0.35))
+	gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	gold_label.position = Vector2(258, 46)
+	gold_label.size = Vector2(238, 24)
+	top.add_child(gold_label)
+
+	level_label = _label("", 16, Color(0.85, 1.0, 0.86))
+	level_label.position = Vector2(16, 76)
+	level_label.size = Vector2(166, 22)
+	top.add_child(level_label)
+
+	power_label = _label("", 16, Color(0.95, 0.78, 1.0))
+	power_label.position = Vector2(188, 76)
+	power_label.size = Vector2(160, 22)
+	top.add_child(power_label)
+
+	progress_label = _label("", 16, Color(0.86, 0.92, 1.0))
+	progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	progress_label.position = Vector2(338, 76)
+	progress_label.size = Vector2(158, 22)
+	top.add_child(progress_label)
+
+	exp_bar = _bar(Color(0.55, 0.9, 0.6))
+	exp_bar.position = Vector2(16, 106)
+	exp_bar.size = Vector2(480, 12)
+	top.add_child(exp_bar)
+
+
+func _build_battle_panel() -> void:
+	battle_panel = Panel.new()
+	battle_panel.position = Vector2(14, 158)
+	battle_panel.size = Vector2(512, 442)
+	battle_panel.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.08, 0.12, 0.18, 0.9), Color(0.8, 0.88, 1.0, 0.16), 8))
+	add_child(battle_panel)
+
+	var moon := ColorRect.new()
+	moon.color = Color(0.7, 0.86, 1.0, 0.12)
+	moon.position = Vector2(354, 30)
+	moon.size = Vector2(86, 86)
+	battle_panel.add_child(moon)
+
+	var ground := ColorRect.new()
+	ground.color = Color(0.07, 0.16, 0.14, 0.92)
+	ground.position = Vector2(10, 336)
+	ground.size = Vector2(492, 84)
+	battle_panel.add_child(ground)
+
+	enemy_name_label = _label("", 21, Color(1.0, 0.9, 0.8))
+	enemy_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	enemy_name_label.position = Vector2(68, 22)
+	enemy_name_label.size = Vector2(376, 28)
+	battle_panel.add_child(enemy_name_label)
+
+	enemy_hp_bar = _bar(Color(0.95, 0.25, 0.35))
+	enemy_hp_bar.position = Vector2(82, 58)
+	enemy_hp_bar.size = Vector2(348, 20)
+	battle_panel.add_child(enemy_hp_bar)
+
+	enemy_hp_label = _label("", 13, Color(1, 1, 1, 0.88))
+	enemy_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	enemy_hp_label.position = Vector2(82, 56)
+	enemy_hp_label.size = Vector2(348, 20)
+	battle_panel.add_child(enemy_hp_label)
+
+	boss_label = _label("BOSS APPROACHING", 24, Color(1.0, 0.38, 0.42))
+	boss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	boss_label.position = Vector2(74, 92)
+	boss_label.size = Vector2(364, 34)
+	boss_label.visible = false
+	battle_panel.add_child(boss_label)
+
+	enemy_sprite = _sprite_panel(Color(0.45, 0.8, 1.0), 10)
+	enemy_sprite.position = Vector2(326, 150)
+	enemy_sprite.size = Vector2(106, 120)
+	battle_panel.add_child(enemy_sprite)
+
+	hero_sprite = _sprite_panel(Color(0.72, 0.95, 1.0), 10)
+	hero_sprite.position = Vector2(82, 250)
+	hero_sprite.size = Vector2(104, 130)
+	battle_panel.add_child(hero_sprite)
+
+	var hero_core := ColorRect.new()
+	hero_core.color = Color(1.0, 0.95, 0.56, 0.9)
+	hero_core.position = Vector2(36, 12)
+	hero_core.size = Vector2(32, 32)
+	hero_sprite.add_child(hero_core)
+
+	player_hp_bar = _bar(Color(0.3, 0.95, 0.58))
+	player_hp_bar.position = Vector2(42, 405)
+	player_hp_bar.size = Vector2(428, 20)
+	battle_panel.add_child(player_hp_bar)
+
+	player_hp_label = _label("", 13, Color(1, 1, 1, 0.9))
+	player_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	player_hp_label.position = Vector2(42, 403)
+	player_hp_label.size = Vector2(428, 22)
+	battle_panel.add_child(player_hp_label)
+
+	reward_label = _label("", 22, Color(1.0, 0.88, 0.38))
+	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reward_label.position = Vector2(56, 292)
+	reward_label.size = Vector2(400, 34)
+	reward_label.visible = false
+	battle_panel.add_child(reward_label)
+
+	clear_label = _label("", 28, Color(1.0, 0.96, 0.74))
+	clear_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	clear_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	clear_label.position = Vector2(32, 126)
+	clear_label.size = Vector2(448, 86)
+	clear_label.visible = false
+	clear_label.add_theme_stylebox_override("normal", UIControllerClass.panel_style(Color(0.18, 0.12, 0.24, 0.94), Color(1.0, 0.82, 0.3, 0.38), 8))
+	battle_panel.add_child(clear_label)
+
+
+func _build_upgrade_panel() -> void:
+	var bottom := Panel.new()
+	bottom.position = Vector2(14, 616)
+	bottom.size = Vector2(512, 330)
+	bottom.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.07, 0.09, 0.16, 0.96), Color(0.8, 0.88, 1.0, 0.14), 8))
+	add_child(bottom)
+
+	var title := _label("Growth", 20, Color(0.92, 0.96, 1.0))
+	title.position = Vector2(14, 8)
+	title.size = Vector2(130, 28)
+	bottom.add_child(title)
+
+	var ids := GameDataClass.get_upgrade_ids()
+	for i in range(ids.size()):
+		var id := String(ids[i])
+		var button := Button.new()
+		button.position = Vector2(14, 42 + i * 48)
+		button.size = Vector2(484, 42)
+		button.focus_mode = Control.FOCUS_NONE
+		button.add_theme_font_size_override("font_size", 15)
+		button.add_theme_stylebox_override("normal", UIControllerClass.button_style(Color(0.14, 0.18, 0.28)))
+		button.add_theme_stylebox_override("hover", UIControllerClass.button_style(Color(0.18, 0.24, 0.36)))
+		button.add_theme_stylebox_override("pressed", UIControllerClass.button_style(Color(0.22, 0.3, 0.44)))
+		button.add_theme_stylebox_override("disabled", UIControllerClass.button_style(Color(0.08, 0.09, 0.12)))
+		button.pressed.connect(_on_upgrade_pressed.bind(id))
+		bottom.add_child(button)
+		upgrade_buttons[id] = button
+
+	var save_button := Button.new()
+	save_button.text = "Save"
+	save_button.position = Vector2(14, 288)
+	save_button.size = Vector2(154, 30)
+	save_button.focus_mode = Control.FOCUS_NONE
+	save_button.pressed.connect(_on_save_pressed)
+	bottom.add_child(save_button)
+
+	var reset_button := Button.new()
+	reset_button.text = "New Game"
+	reset_button.position = Vector2(178, 288)
+	reset_button.size = Vector2(154, 30)
+	reset_button.focus_mode = Control.FOCUS_NONE
+	reset_button.pressed.connect(_on_reset_pressed)
+	bottom.add_child(reset_button)
+
+	var next_label := _label("Next: second region after v0.1 clear", 13, Color(0.75, 0.8, 0.9))
+	next_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	next_label.position = Vector2(338, 288)
+	next_label.size = Vector2(160, 30)
+	bottom.add_child(next_label)
+
+
+func _load_or_start() -> void:
+	state = GameStateClass.new()
+	var data := SaveManagerClass.load_game()
+	if not data.is_empty():
+		state.load_from_dict(data)
+	var offline_reward: int = state.apply_offline_reward(Time.get_unix_time_from_system())
+	if offline_reward > 0:
+		_show_reward("While away +" + UIControllerClass.format_number(offline_reward) + " Gold")
+		SaveManagerClass.save_game(state)
+
+
+func _start_combat() -> void:
+	combat = CombatControllerClass.new()
+	add_child(combat)
+	combat.enemy_hit.connect(_on_enemy_hit)
+	combat.player_hit.connect(_on_player_hit)
+	combat.enemy_defeated.connect(_on_enemy_defeated)
+	combat.boss_cleared.connect(_on_boss_cleared)
+	combat.player_down.connect(_on_player_down)
+	combat.enemy_spawned.connect(_on_enemy_spawned)
+	combat.start(state)
+
+
+func _setup_autosave() -> void:
+	autosave_timer = Timer.new()
+	autosave_timer.wait_time = 8.0
+	autosave_timer.autostart = true
+	autosave_timer.timeout.connect(func(): SaveManagerClass.save_game(state))
+	add_child(autosave_timer)
+
+
+func _update_ui() -> void:
+	if state == null:
+		return
+
+	var stats: Dictionary = state.get_player_stats()
+	stage_label.text = GameDataClass.REGION_NAME + "  " + _stage_text()
+	gold_label.text = "Gold " + UIControllerClass.format_number(state.gold)
+	level_label.text = "Lv." + str(state.player_level) + "  EXP " + str(state.exp) + "/" + str(state.exp_to_next_level())
+	power_label.text = "Power " + UIControllerClass.format_number(int(stats["power"]))
+	progress_label.text = "Progress " + str(state.current_enemy_progress) + "/" + str(GameDataClass.KILLS_PER_STAGE)
+	enemy_name_label.text = state.enemy_data["name"]
+	enemy_hp_label.text = UIControllerClass.format_number(int(ceil(state.enemy_hp))) + " / " + UIControllerClass.format_number(int(state.enemy_max_hp))
+	player_hp_label.text = "HP " + UIControllerClass.format_number(int(ceil(state.player_hp))) + " / " + UIControllerClass.format_number(int(stats["max_hp"]))
+	UIControllerClass.set_bar(enemy_hp_bar, state.enemy_hp, state.enemy_max_hp)
+	UIControllerClass.set_bar(player_hp_bar, state.player_hp, float(stats["max_hp"]))
+	UIControllerClass.set_bar(exp_bar, float(state.exp), float(state.exp_to_next_level()))
+	boss_label.visible = state.is_boss
+
+	for id in upgrade_buttons.keys():
+		_refresh_upgrade_button(String(id))
+
+
+func _refresh_upgrade_button(id: String) -> void:
+	var button: Button = upgrade_buttons[id]
+	var upgrade := GameDataClass.get_upgrade(id)
+	var level := int(state.upgrade_levels.get(id, 0))
+	var cost: int = state.get_upgrade_cost(id)
+	button.text = String(upgrade["name"]) + "  Lv." + str(level) + "   " + String(upgrade["desc"]) + "   Cost " + UIControllerClass.format_number(cost)
+	button.disabled = not state.can_purchase_upgrade(id)
+
+
+func _on_upgrade_pressed(id: String) -> void:
+	if state.purchase_upgrade(id):
+		EffectsClass.floating_text(self, "Upgrade!", Vector2(270, 642), Color(0.55, 1.0, 0.58), 24)
+		SaveManagerClass.save_game(state)
+		_update_ui()
+
+
+func _on_save_pressed() -> void:
+	if SaveManagerClass.save_game(state):
+		_show_reward("Saved")
+
+
+func _on_reset_pressed() -> void:
+	SaveManagerClass.delete_save()
+	state.reset()
+	combat.start(state)
+	_show_reward("New run started")
+	_update_ui()
+
+
+func _on_enemy_hit(amount: int, critical: bool) -> void:
+	var text := ("CRIT " if critical else "") + "-" + UIControllerClass.format_number(amount)
+	var color := Color(1.0, 0.95, 0.45) if critical else Color(1.0, 0.45, 0.36)
+	EffectsClass.floating_text(battle_panel, text, enemy_sprite.position + Vector2(enemy_sprite.size.x * 0.5, 18), color, 24 if critical else 20)
+	EffectsClass.flash(enemy_sprite, Color(1.0, 0.88, 0.88), 0.1)
+	EffectsClass.bump(hero_sprite, Vector2(12, -3), 0.12)
+	if state.is_boss:
+		EffectsClass.shake(battle_panel, 5.0)
+	_update_ui()
+
+
+func _on_player_hit(amount: int) -> void:
+	EffectsClass.floating_text(battle_panel, "-" + UIControllerClass.format_number(amount), hero_sprite.position + Vector2(50, 4), Color(0.72, 0.9, 1.0), 18)
+	EffectsClass.flash(hero_sprite, Color(0.8, 0.9, 1.0), 0.1)
+	_update_ui()
+
+
+func _on_enemy_defeated(result: Dictionary) -> void:
+	var reward: Dictionary = result["reward"]
+	var message := "+" + UIControllerClass.format_number(int(reward["gold"])) + " Gold  +" + str(int(reward["exp"])) + " EXP"
+	if bool(reward["leveled"]):
+		message += "  LEVEL UP"
+	_show_reward(message)
+	SaveManagerClass.save_game(state)
+	_update_ui()
+
+
+func _on_boss_cleared(result: Dictionary) -> void:
+	_show_clear_banner("REGION CLEAR\nMoonwell Ruins secured\nNext region coming soon")
+	SaveManagerClass.save_game(state)
+	_update_ui()
+
+
+func _on_player_down() -> void:
+	_show_reward("Guardian restored")
+	_update_ui()
+
+
+func _on_enemy_spawned() -> void:
+	if state == null:
+		return
+	var color: Color = state.enemy_data["color"]
+	enemy_sprite.add_theme_stylebox_override("panel", UIControllerClass.panel_style(color, Color(1, 1, 1, 0.25), 12))
+	if state.is_boss:
+		enemy_sprite.position = Vector2(292, 120)
+		enemy_sprite.size = Vector2(150, 170)
+		_show_reward("Boss Battle")
+	else:
+		enemy_sprite.position = Vector2(326, 150)
+		enemy_sprite.size = Vector2(106, 120)
+	_update_ui()
+
+
+func _show_reward(text: String) -> void:
+	reward_label.text = text
+	reward_label.visible = true
+	reward_label.modulate.a = 1.0
+	var tween := reward_label.create_tween()
+	tween.tween_property(reward_label, "modulate:a", 1.0, 0.8)
+	tween.tween_property(reward_label, "modulate:a", 0.0, 0.35)
+	tween.tween_callback(func(): reward_label.visible = false)
+
+
+func _show_clear_banner(text: String) -> void:
+	clear_label.text = text
+	clear_label.visible = true
+	clear_label.modulate.a = 1.0
+	var tween := clear_label.create_tween()
+	tween.tween_property(clear_label, "scale", Vector2(1.03, 1.03), 0.18)
+	tween.tween_property(clear_label, "scale", Vector2.ONE, 0.18)
+
+
+func _stage_text() -> String:
+	if state.boss_clear_state:
+		return "CLEAR"
+	if state.is_boss:
+		return "Stage " + str(GameDataClass.MAX_STAGE) + " Boss"
+	return "Stage " + str(state.current_stage) + "/" + str(GameDataClass.MAX_STAGE)
+
+
+func _label(text: String, font_size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.68))
+	label.add_theme_constant_override("shadow_offset_x", 2)
+	label.add_theme_constant_override("shadow_offset_y", 2)
+	return label
+
+
+func _bar(fill_color: Color) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.add_theme_stylebox_override("background", UIControllerClass.panel_style(Color(0.02, 0.025, 0.04, 0.84), Color(1, 1, 1, 0.12), 5))
+	bar.add_theme_stylebox_override("fill", UIControllerClass.panel_style(fill_color, Color(1, 1, 1, 0), 5))
+	return bar
+
+
+func _sprite_panel(color: Color, radius: int) -> Panel:
+	var panel := Panel.new()
+	panel.add_theme_stylebox_override("panel", UIControllerClass.panel_style(color, Color(1, 1, 1, 0.22), radius))
+	return panel
