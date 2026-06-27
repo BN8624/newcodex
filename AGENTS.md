@@ -96,6 +96,42 @@ Make a reasonable decision and implement.
 
 ---
 
+## 2.1 Assistant Parallelization Policy
+
+The user has provided 11 separate Google API project keys in the local `.env` file for assistant work.
+
+For substantial development, art direction, balance, UI review, release-readiness review, documentation review, or asset-pipeline work, use assistants as much as practical instead of doing every reasoning task serially.
+
+Default assistant target:
+
+```text
+Gemma 4 31B via API.
+```
+
+Use the keys only from the local `.env` file. Never print, commit, summarize, or expose key values. `.env` must stay ignored and out of source control.
+
+Preferred assistant split:
+
+```text
+1. Style guide / art direction review
+2. Prompt candidates for generated assets
+3. UI readability review for 540x960 mobile
+4. Game balance and first-3-minute progression review
+5. Godot implementation risk review
+6. Asset slicing / import / compression plan
+7. Korean copy and localization review
+8. Commercial-release checklist review
+9. Existing reference project comparison
+10. Bug-risk and save compatibility review
+11. Final integration checklist
+```
+
+Codex remains responsible for final judgment, file edits, verification, commits, pushes, and deployment checks. Assistant output is advisory and must be checked against the actual workspace before implementation.
+
+Do not rotate keys to bypass provider policy. The keys are separate project keys, so use them for legitimate parallel work, redundancy, and throughput when the task benefits from it.
+
+---
+
 ## 3. Technology Target
 
 Use Godot 4.x and GDScript.

@@ -39,3 +39,10 @@
 - Kenney Tiny Dungeon은 공식 페이지와 포함 License.txt 기준 CC0이며 개인, 교육, 상업 프로젝트 사용이 가능하다.
 - 실루엣 배우 뷰는 PNG를 직접 `ImageTexture`로 읽는 방식으로 바꿨다. Godot import 파일 유무와 무관하게 Web 팩의 원본 PNG를 읽을 수 있게 하기 위해서다.
 - 적용 범위는 던전 배경 타일, 수호자, 네 일반 적, 보스, 클리어 관문, 성장 버튼 아이콘이다.
+
+## 2026-06-28 Assistant parallelization policy
+
+- The user confirmed the 11 Google API keys in local `.env` are separate project keys and can be used aggressively for assistant work.
+- Future substantial work should use Gemma 4 31B assistants as much as practical for art direction, prompts, UI review, balance review, Godot risk review, asset import planning, Korean copy, release checks, reference comparison, save compatibility, and final checklist review.
+- Do not expose, print, commit, or summarize key values. `.env` remains local and ignored.
+- Codex keeps final responsibility for implementation, verification, commits, pushes, and deployment checks.
