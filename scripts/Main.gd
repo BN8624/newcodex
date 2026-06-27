@@ -11,6 +11,7 @@ const VerifierClass := preload("res://scripts/Verifier.gd")
 const BattleActorViewClass := preload("res://scripts/BattleActorView.gd")
 const BattleBackdropClass := preload("res://scripts/BattleBackdrop.gd")
 const SoundManagerClass := preload("res://scripts/SoundManager.gd")
+const AssetTexturesClass := preload("res://scripts/AssetTextures.gd")
 
 const KOREAN_FONT_PATH := "res://malgun.ttf"
 const SKILL_COOLDOWN := 7.0
@@ -222,13 +223,13 @@ func _build_battle_panel() -> void:
 	battle_panel.add_child(boss_label)
 
 	enemy_sprite = BattleActorViewClass.new()
-	enemy_sprite.setup("enemy", Color(0.45, 0.8, 1.0))
+	enemy_sprite.setup("enemy", Color(0.45, 0.8, 1.0), "res://assets/kenney/tiny-dungeon/Tiles/tile_0121.png")
 	enemy_sprite.position = Vector2(318, 146)
 	enemy_sprite.size = Vector2(126, 142)
 	battle_panel.add_child(enemy_sprite)
 
 	hero_sprite = BattleActorViewClass.new()
-	hero_sprite.setup("hero", Color(0.72, 0.95, 1.0))
+	hero_sprite.setup("hero", Color(0.72, 0.95, 1.0), "res://assets/kenney/tiny-dungeon/Tiles/tile_0097.png")
 	hero_sprite.position = Vector2(68, 238)
 	hero_sprite.size = Vector2(128, 148)
 	battle_panel.add_child(hero_sprite)
@@ -297,6 +298,12 @@ func _build_upgrade_panel() -> void:
 		button.add_theme_stylebox_override("hover", UIControllerClass.button_style(Color(0.18, 0.24, 0.36)))
 		button.add_theme_stylebox_override("pressed", UIControllerClass.button_style(Color(0.22, 0.3, 0.44)))
 		button.add_theme_stylebox_override("disabled", UIControllerClass.button_style(Color(0.08, 0.09, 0.12)))
+		var upgrade := GameDataClass.get_upgrade(id)
+		var icon := AssetTexturesClass.load_png(String(upgrade["icon"]))
+		if icon != null:
+			button.icon = icon
+			button.expand_icon = true
+			button.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		button.pressed.connect(_on_upgrade_pressed.bind(id))
 		bottom.add_child(button)
 		upgrade_buttons[id] = button
@@ -518,18 +525,19 @@ func _on_enemy_spawned() -> void:
 	if state == null:
 		return
 	var color: Color = state.enemy_data["color"]
+	var sprite_path := String(state.enemy_data.get("sprite", ""))
 	if state.is_boss:
-		enemy_sprite.setup("boss", color)
+		enemy_sprite.setup("boss", color, sprite_path)
 		enemy_sprite.position = Vector2(286, 126)
 		enemy_sprite.size = Vector2(166, 184)
 		_play_sound("boss")
 		_show_reward("보스전 시작")
 	elif state.boss_clear_state:
-		enemy_sprite.setup("gate", color)
+		enemy_sprite.setup("gate", color, sprite_path)
 		enemy_sprite.position = Vector2(314, 148)
 		enemy_sprite.size = Vector2(136, 150)
 	else:
-		enemy_sprite.setup("enemy", color)
+		enemy_sprite.setup("enemy", color, sprite_path)
 		enemy_sprite.position = Vector2(318, 146)
 		enemy_sprite.size = Vector2(126, 142)
 	_update_ui()

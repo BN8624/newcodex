@@ -12,36 +12,42 @@ const UPGRADES := {
 	"attack": {
 		"name": "달빛검",
 		"desc": "공격력",
+		"icon": "res://assets/kenney/tiny-dungeon/Tiles/tile_0104.png",
 		"base_cost": 12,
 		"cost_growth": 1.18
 	},
 	"hp": {
 		"name": "수호의 심장",
 		"desc": "최대 체력",
+		"icon": "res://assets/kenney/tiny-dungeon/Tiles/tile_0115.png",
 		"base_cost": 16,
 		"cost_growth": 1.18
 	},
 	"defense": {
 		"name": "결계 갑옷",
 		"desc": "방어력",
+		"icon": "res://assets/kenney/tiny-dungeon/Tiles/tile_0118.png",
 		"base_cost": 18,
 		"cost_growth": 1.19
 	},
 	"speed": {
 		"name": "신속 의식",
 		"desc": "공격 속도",
+		"icon": "res://assets/kenney/tiny-dungeon/Tiles/tile_0114.png",
 		"base_cost": 24,
 		"cost_growth": 1.2
 	},
 	"gold": {
 		"name": "황금 부적",
 		"desc": "골드 획득",
+		"icon": "res://assets/kenney/tiny-dungeon/Tiles/tile_0066.png",
 		"base_cost": 20,
 		"cost_growth": 1.18
 	},
 	"crit": {
 		"name": "별빛 징표",
 		"desc": "치명 확률",
+		"icon": "res://assets/kenney/tiny-dungeon/Tiles/tile_0128.png",
 		"base_cost": 28,
 		"cost_growth": 1.2
 	}
@@ -54,7 +60,8 @@ const ENEMIES := [
 		"damage": 5,
 		"gold": 9,
 		"exp": 7,
-		"color": Color(0.45, 0.8, 1.0)
+		"color": Color(0.45, 0.8, 1.0),
+		"sprite": "res://assets/kenney/tiny-dungeon/Tiles/tile_0121.png"
 	},
 	{
 		"name": "이끼 파수꾼",
@@ -62,7 +69,8 @@ const ENEMIES := [
 		"damage": 7,
 		"gold": 11,
 		"exp": 8,
-		"color": Color(0.42, 0.9, 0.45)
+		"color": Color(0.42, 0.9, 0.45),
+		"sprite": "res://assets/kenney/tiny-dungeon/Tiles/tile_0108.png"
 	},
 	{
 		"name": "호박빛 그림자",
@@ -70,7 +78,8 @@ const ENEMIES := [
 		"damage": 9,
 		"gold": 13,
 		"exp": 10,
-		"color": Color(1.0, 0.65, 0.28)
+		"color": Color(1.0, 0.65, 0.28),
+		"sprite": "res://assets/kenney/tiny-dungeon/Tiles/tile_0120.png"
 	},
 	{
 		"name": "룬 껍질수",
@@ -78,7 +87,8 @@ const ENEMIES := [
 		"damage": 11,
 		"gold": 16,
 		"exp": 12,
-		"color": Color(0.72, 0.6, 1.0)
+		"color": Color(0.72, 0.6, 1.0),
+		"sprite": "res://assets/kenney/tiny-dungeon/Tiles/tile_0110.png"
 	}
 ]
 
@@ -88,7 +98,8 @@ const BOSS := {
 	"damage": 24,
 	"gold": 420,
 	"exp": 140,
-	"color": Color(1.0, 0.32, 0.42)
+	"color": Color(1.0, 0.32, 0.42),
+	"sprite": "res://assets/kenney/tiny-dungeon/Tiles/tile_0122.png"
 }
 
 const CLEAR_TARGET := {
@@ -97,7 +108,8 @@ const CLEAR_TARGET := {
 	"damage": 4,
 	"gold": 35,
 	"exp": 12,
-	"color": Color(1.0, 0.92, 0.55)
+	"color": Color(1.0, 0.92, 0.55),
+	"sprite": "res://assets/kenney/tiny-dungeon/Tiles/tile_0082.png"
 }
 
 static func get_upgrade_ids() -> Array:

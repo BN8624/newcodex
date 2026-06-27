@@ -2,19 +2,25 @@
 extends Control
 class_name BattleActorView
 
+const AssetTexturesClass := preload("res://scripts/AssetTextures.gd")
+
 var actor_mode := "enemy"
 var accent_color := Color(0.45, 0.8, 1.0)
+var sprite_texture: Texture2D
 var pulse := 0.0
 
 
 func _ready() -> void:
 	set_process(true)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
-func setup(new_mode: String, new_color: Color) -> void:
+func setup(new_mode: String, new_color: Color, sprite_path := "") -> void:
 	actor_mode = new_mode
 	accent_color = new_color
+	sprite_texture = null
+	sprite_texture = AssetTexturesClass.load_png(sprite_path)
 	queue_redraw()
 
 
@@ -41,6 +47,8 @@ func _draw() -> void:
 
 
 func _draw_hero(w: float, h: float, bob: float) -> void:
+	if _draw_sprite_art(w, h, bob, Color(0.72, 0.95, 1.0, 0.2), 6.5):
+		return
 	var outline := Color(0.04, 0.07, 0.12, 1.0)
 	var cape := Color(0.12, 0.28, 0.46, 1.0)
 	var armor := accent_color
@@ -65,6 +73,8 @@ func _draw_hero(w: float, h: float, bob: float) -> void:
 
 
 func _draw_enemy(w: float, h: float, bob: float) -> void:
+	if _draw_sprite_art(w, h, bob, Color(accent_color.r, accent_color.g, accent_color.b, 0.22), 6.0):
+		return
 	var outline := Color(0.03, 0.04, 0.08, 1.0)
 	var body := accent_color
 	var glow := Color(accent_color.r, accent_color.g, accent_color.b, 0.24)
@@ -97,6 +107,8 @@ func _draw_enemy(w: float, h: float, bob: float) -> void:
 
 
 func _draw_boss(w: float, h: float, bob: float) -> void:
+	if _draw_sprite_art(w, h, bob, Color(accent_color.r, accent_color.g, accent_color.b, 0.28), 7.6):
+		return
 	var outline := Color(0.04, 0.02, 0.05, 1.0)
 	var body := accent_color
 	var core := Color(1.0, 0.78, 0.32, 1.0)
@@ -123,6 +135,8 @@ func _draw_boss(w: float, h: float, bob: float) -> void:
 
 
 func _draw_gate(w: float, h: float, bob: float) -> void:
+	if _draw_sprite_art(w, h, bob, Color(1.0, 0.86, 0.3, 0.24), 6.8):
+		return
 	var y := bob
 	var stone := Color(0.78, 0.74, 0.62, 1.0)
 	var light := Color(1.0, 0.86, 0.3, 0.85)
@@ -132,3 +146,14 @@ func _draw_gate(w: float, h: float, bob: float) -> void:
 	draw_circle(Vector2(w * 0.5, h * 0.34 + y), w * 0.26, stone)
 	draw_rect(Rect2(w * 0.34, h * 0.4 + y, w * 0.32, h * 0.44), Color(0.08, 0.1, 0.16), true)
 	draw_circle(Vector2(w * 0.5, h * 0.53 + y), w * 0.13, light)
+
+
+func _draw_sprite_art(w: float, h: float, bob: float, glow_color: Color, scale_factor: float) -> bool:
+	if sprite_texture == null:
+		return false
+	var center := Vector2(w * 0.5, h * 0.46 + bob)
+	var sprite_size := Vector2(sprite_texture.get_width(), sprite_texture.get_height()) * scale_factor
+	draw_circle(center, max(sprite_size.x, sprite_size.y) * 0.52, glow_color)
+	draw_texture_rect(sprite_texture, Rect2(center - sprite_size * 0.5, sprite_size), false)
+	draw_line(center + Vector2(-sprite_size.x * 0.34, sprite_size.y * 0.46), center + Vector2(sprite_size.x * 0.34, sprite_size.y * 0.46), Color(1, 1, 1, 0.16), 2.0)
+	return true

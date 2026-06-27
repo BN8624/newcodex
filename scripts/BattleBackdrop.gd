@@ -2,8 +2,13 @@
 extends Control
 class_name BattleBackdrop
 
+const AssetTexturesClass := preload("res://scripts/AssetTextures.gd")
+
 var time := 0.0
 var redraw_timer := 0.0
+var wall_texture: Texture2D
+var floor_texture: Texture2D
+var trim_texture: Texture2D
 var stars := [
 	Vector2(58, 62),
 	Vector2(108, 104),
@@ -20,6 +25,10 @@ var stars := [
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	wall_texture = AssetTexturesClass.load_png("res://assets/kenney/tiny-dungeon/Tiles/tile_0014.png")
+	floor_texture = AssetTexturesClass.load_png("res://assets/kenney/tiny-dungeon/Tiles/tile_0030.png")
+	trim_texture = AssetTexturesClass.load_png("res://assets/kenney/tiny-dungeon/Tiles/tile_0036.png")
 	set_process(true)
 
 
@@ -35,7 +44,13 @@ func _draw() -> void:
 	var w := size.x
 	var h := size.y
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.025, 0.045, 0.105, 1.0), true)
-	draw_rect(Rect2(0, h * 0.45, w, h * 0.55), Color(0.04, 0.085, 0.13, 0.82), true)
+	if wall_texture != null:
+		draw_texture_rect(wall_texture, Rect2(0, 0, w, h * 0.58), true, Color(0.58, 0.68, 0.88, 0.4))
+	if floor_texture != null:
+		draw_texture_rect(floor_texture, Rect2(0, h * 0.58, w, h * 0.42), true, Color(0.82, 0.92, 1.0, 0.7))
+	if trim_texture != null:
+		draw_texture_rect(trim_texture, Rect2(0, h * 0.55, w, 36), true, Color(0.86, 0.95, 1.0, 0.7))
+	draw_rect(Rect2(0, h * 0.45, w, h * 0.55), Color(0.04, 0.085, 0.13, 0.38), true)
 
 	var moon_center := Vector2(w * 0.78, h * 0.18)
 	var glow := 28.0 + sin(time * 1.4) * 3.0
