@@ -2,17 +2,17 @@
 
 ## 1. Game Title and Concept
 
-Moonwell Vanguard is a 540x960 vertical idle RPG where a moon guardian auto-battles through the Moonwell Ruins, buys growth upgrades, and clears the Moonbound Colossus boss.
+Moonwell Vanguard is a 540x960 vertical idle RPG where a moon guardian auto-battles through the Moonwell Ruins, buys growth upgrades, and clears the Moonbound Colossus boss. This report describes the current public playtest candidate, not a store-submission package.
 
 ## 2. Implemented Systems
 
 - Godot 4.x project with `scenes/Main.tscn` as the main scene.
-- Mobile-first 540x960 UI with title/status, battleground, HP bars, progress, gold, power, and upgrade controls.
-- Automatic player attacks, enemy pressure, player HP restoration on defeat, hit flash, lunge, shake, and floating damage numbers.
+- Mobile-first 540x960 UI with title/status, launch-candidate badge, battleground, HP bars, stage path, progress, gold, power, and upgrade controls.
+- In-engine drawn hero, enemy, boss, and post-clear gate silhouettes with movement, hit flash, lunge, shake, and floating damage numbers.
 - 15-stage first region with four rotating normal enemies and one stage 15 boss.
 - Gold and EXP rewards, player level growth, stage progress, boss clear banner, and post-clear placeholder target.
 - Five upgrade buttons with level, cost scaling, affordability state, and immediate stat impact.
-- Local JSON save/load, autosave, manual save, reset/new game, `save_version`, and capped offline gold reward.
+- Local JSON save/load, autosave, manual save, two-tap reset/new game, `save_version`, and capped offline gold reward.
 - `--verify` mode for core state tests.
 
 ## 3. File/Folder Structure
@@ -36,11 +36,11 @@ Moonwell Vanguard is a 540x960 vertical idle RPG where a moon guardian auto-batt
 
 ## 4. Current 3-Minute Play Flow
 
-The player opens the game, sees the title, stage, gold, power, HP bars, enemy, hero, and five growth buttons. Combat starts automatically, enemies take visible damage, rewards pop up after defeats, stage progress advances after three kills, upgrades become affordable quickly, and the boss appears at stage 15.
+The player opens the game, sees the title, auto-battle state, stage goal, stage path, gold, power, HP bars, drawn hero, drawn enemy, and five growth buttons. Combat starts automatically, enemies take visible damage, rewards pop up after defeats, stage progress advances after three kills, upgrades become affordable quickly, and the boss appears at stage 15.
 
 ## 5. Save/Load Behavior
 
-The game loads `user://moonwell_vanguard_save.json` on start when present. It saves after upgrades, enemy rewards, boss clear, manual save, periodic autosave, and close request. Offline reward uses `last_play_time` with a 2-hour cap.
+The game loads `user://moonwell_vanguard_save.json` on start when present. It saves after upgrades, enemy rewards, boss clear, manual save, periodic autosave, and close request. Offline reward uses `last_play_time` with a 2-hour cap. New game reset requires two taps within three seconds.
 
 ## 6. How to Run
 
@@ -60,14 +60,15 @@ Verification command:
 
 ## 7. Web Build Status
 
-`export_presets.cfg` includes a Web preset targeting `build/web/index.html`. Actual Web export was attempted but failed because Godot 4.7 Web export templates are not installed.
+`export_presets.cfg` includes a Web preset targeting `build/web/index.html` with Web thread support disabled. For the active iPhone playtest server, the project pack was rebuilt with Godot 4.7 and served through Tailscale HTTPS at `https://node.tail3e9e21.ts.net:10000`.
 
-Missing templates reported by Godot:
+Full official `--export-release` still requires Godot 4.7 export templates in:
 
-- `C:/Users/USER/AppData/Roaming/Godot/export_templates/4.7.stable/web_nothreads_debug.zip`
-- `C:/Users/USER/AppData/Roaming/Godot/export_templates/4.7.stable/web_nothreads_release.zip`
+```text
+C:/Users/USER/AppData/Roaming/Godot/export_templates/4.7.stable/
+```
 
-After installing Godot 4.7 export templates, run:
+When those templates are installed, run:
 
 ```powershell
 New-Item -ItemType Directory -Force build\web | Out-Null
@@ -94,12 +95,14 @@ PASS: save data roundtrip works
 VERIFY_RESULT: passed
 ```
 
-- Web export attempted and failed only because export templates are missing.
+- HTTPS mobile Web playtest checked through Tailscale Serve at `https://node.tail3e9e21.ts.net:10000`.
+- Mobile browser check passed at 390x844 viewport: title `Moonwell Vanguard`, one Godot canvas, canvas filled the viewport, and no Secure Context error.
+- Screenshot capture through the in-app browser timed out, so visual confirmation was limited to DOM/canvas checks plus Godot runtime load.
 
 ## 9. Known Missing Features
 
-Inventory, equipment, gacha, skill trees, quests, monetization, login, cloud save, rankings, full audio, generated screenshots, and final art assets are intentionally excluded from v0.1.
+Inventory, equipment, gacha, skill trees, quests, monetization, login, cloud save, rankings, full audio, app store packaging, and final commissioned art assets are intentionally excluded from v0.1.
 
 ## 10. Next One-Click Sprint Recommendation
 
-Install Godot 4.7 Web export templates, export the Web build, then add a small skill cooldown button and a second region data slice without changing the save format.
+Install Godot 4.7 Web export templates, run a full official Web export, then add a small skill cooldown button and a second region data slice without changing the save format.

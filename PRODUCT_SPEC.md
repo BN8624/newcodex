@@ -56,6 +56,8 @@ Open the game, watch automatic combat, earn Moon Gold and EXP from defeated enem
 - Five upgrade buttons with scaling costs.
 - Local save/load, manual save, reset, periodic autosave, and capped offline reward.
 - Verification script for core state behavior.
+- In-engine drawn hero, enemy, boss, and clear target silhouettes so the first screen reads as a complete mobile idle RPG instead of a raw UI test.
+- Safer two-tap reset flow for public playtest builds.
 
 ## 9. Explicitly Excluded Features
 
@@ -67,4 +69,4 @@ Inventory, equipment, gacha, character collection, skill tree, quests, multiple 
 - Lightweight equipment slots.
 - Skill cooldown button.
 - Generated simple sound effects.
-- Export preset and Web build pipeline.
+- Second-region content slice and final store packaging.

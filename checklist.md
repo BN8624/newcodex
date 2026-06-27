@@ -11,3 +11,8 @@
 - [x] Add lightweight visual feedback.
 - [x] Run available verification.
 - [x] Write BUILD_REPORT.md.
+- [x] Raise first-screen quality to public playtest candidate level.
+- [x] Add safer reset flow and clearer save state feedback.
+- [x] Add richer stage, enemy, boss, and reward presentation.
+- [x] Rebuild Web playtest package and verify on mobile HTTPS.
+- [x] Commit and push launch-candidate polish.

@@ -8,31 +8,39 @@ const SaveManagerClass := preload("res://scripts/SaveManager.gd")
 const UIControllerClass := preload("res://scripts/UIController.gd")
 const EffectsClass := preload("res://scripts/Effects.gd")
 const VerifierClass := preload("res://scripts/Verifier.gd")
+const BattleActorViewClass := preload("res://scripts/BattleActorView.gd")
 
 var state
 var combat
 
 var title_label: Label
+var subtitle_label: Label
 var stage_label: Label
 var gold_label: Label
 var level_label: Label
 var power_label: Label
 var progress_label: Label
+var goal_label: Label
+var mode_label: Label
 var enemy_name_label: Label
+var enemy_tag_label: Label
 var enemy_hp_label: Label
 var player_hp_label: Label
 var boss_label: Label
 var reward_label: Label
 var clear_label: Label
+var stage_path_label: Label
 var enemy_hp_bar: ProgressBar
 var player_hp_bar: ProgressBar
 var exp_bar: ProgressBar
 var battle_panel: Panel
-var hero_sprite: Panel
-var enemy_sprite: Panel
+var hero_sprite
+var enemy_sprite
 var upgrade_buttons := {}
+var reset_button: Button
 var autosave_timer: Timer
 var ui_refresh_timer := 0.0
+var reset_pending := false
 
 
 func _ready() -> void:
@@ -84,43 +92,55 @@ func _build_top_panel() -> void:
 	var top := Panel.new()
 	top.position = Vector2(14, 14)
 	top.size = Vector2(512, 132)
-	top.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.08, 0.1, 0.2, 0.94), Color(0.6, 0.82, 1.0, 0.18), 8))
+	top.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.045, 0.06, 0.12, 0.96), Color(0.78, 0.9, 1.0, 0.22), 8))
 	add_child(top)
 
-	title_label = _label("Moonwell Vanguard", 28, Color(0.98, 0.94, 0.75))
+	mode_label = _label("AUTO BATTLE", 12, Color(0.05, 0.07, 0.12))
+	mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mode_label.position = Vector2(366, 10)
+	mode_label.size = Vector2(126, 22)
+	mode_label.add_theme_stylebox_override("normal", UIControllerClass.panel_style(Color(0.93, 0.84, 0.36, 0.96), Color(1, 1, 1, 0.15), 6))
+	top.add_child(mode_label)
+
+	title_label = _label("Moonwell Vanguard", 26, Color(0.98, 0.94, 0.75))
 	title_label.position = Vector2(14, 8)
-	title_label.size = Vector2(484, 34)
+	title_label.size = Vector2(340, 30)
 	top.add_child(title_label)
 
+	subtitle_label = _label("Moonwell Ruins - launch candidate build", 12, Color(0.7, 0.8, 0.95))
+	subtitle_label.position = Vector2(16, 34)
+	subtitle_label.size = Vector2(360, 18)
+	top.add_child(subtitle_label)
+
 	stage_label = _label("", 18, Color(0.82, 0.9, 1.0))
-	stage_label.position = Vector2(16, 46)
+	stage_label.position = Vector2(16, 56)
 	stage_label.size = Vector2(240, 24)
 	top.add_child(stage_label)
 
 	gold_label = _label("", 18, Color(1.0, 0.86, 0.35))
 	gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	gold_label.position = Vector2(258, 46)
+	gold_label.position = Vector2(258, 56)
 	gold_label.size = Vector2(238, 24)
 	top.add_child(gold_label)
 
 	level_label = _label("", 16, Color(0.85, 1.0, 0.86))
-	level_label.position = Vector2(16, 76)
+	level_label.position = Vector2(16, 84)
 	level_label.size = Vector2(166, 22)
 	top.add_child(level_label)
 
 	power_label = _label("", 16, Color(0.95, 0.78, 1.0))
-	power_label.position = Vector2(188, 76)
+	power_label.position = Vector2(188, 84)
 	power_label.size = Vector2(160, 22)
 	top.add_child(power_label)
 
 	progress_label = _label("", 16, Color(0.86, 0.92, 1.0))
 	progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	progress_label.position = Vector2(338, 76)
+	progress_label.position = Vector2(338, 84)
 	progress_label.size = Vector2(158, 22)
 	top.add_child(progress_label)
 
 	exp_bar = _bar(Color(0.55, 0.9, 0.6))
-	exp_bar.position = Vector2(16, 106)
+	exp_bar.position = Vector2(16, 112)
 	exp_bar.size = Vector2(480, 12)
 	top.add_child(exp_bar)
 
@@ -129,7 +149,7 @@ func _build_battle_panel() -> void:
 	battle_panel = Panel.new()
 	battle_panel.position = Vector2(14, 158)
 	battle_panel.size = Vector2(512, 442)
-	battle_panel.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.08, 0.12, 0.18, 0.9), Color(0.8, 0.88, 1.0, 0.16), 8))
+	battle_panel.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.05, 0.08, 0.13, 0.94), Color(0.8, 0.88, 1.0, 0.18), 8))
 	add_child(battle_panel)
 
 	var moon := ColorRect.new()
@@ -139,50 +159,58 @@ func _build_battle_panel() -> void:
 	battle_panel.add_child(moon)
 
 	var ground := ColorRect.new()
-	ground.color = Color(0.07, 0.16, 0.14, 0.92)
+	ground.color = Color(0.06, 0.14, 0.13, 0.95)
 	ground.position = Vector2(10, 336)
 	ground.size = Vector2(492, 84)
 	battle_panel.add_child(ground)
 
+	goal_label = _label("", 15, Color(0.83, 0.9, 1.0))
+	goal_label.position = Vector2(20, 16)
+	goal_label.size = Vector2(180, 24)
+	goal_label.add_theme_stylebox_override("normal", UIControllerClass.panel_style(Color(0.1, 0.14, 0.22, 0.82), Color(1, 1, 1, 0.12), 6))
+	battle_panel.add_child(goal_label)
+
 	enemy_name_label = _label("", 21, Color(1.0, 0.9, 0.8))
 	enemy_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	enemy_name_label.position = Vector2(68, 22)
+	enemy_name_label.position = Vector2(68, 38)
 	enemy_name_label.size = Vector2(376, 28)
 	battle_panel.add_child(enemy_name_label)
 
+	enemy_tag_label = _label("", 13, Color(0.7, 0.82, 0.96))
+	enemy_tag_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	enemy_tag_label.position = Vector2(92, 64)
+	enemy_tag_label.size = Vector2(328, 20)
+	battle_panel.add_child(enemy_tag_label)
+
 	enemy_hp_bar = _bar(Color(0.95, 0.25, 0.35))
-	enemy_hp_bar.position = Vector2(82, 58)
+	enemy_hp_bar.position = Vector2(82, 86)
 	enemy_hp_bar.size = Vector2(348, 20)
 	battle_panel.add_child(enemy_hp_bar)
 
 	enemy_hp_label = _label("", 13, Color(1, 1, 1, 0.88))
 	enemy_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	enemy_hp_label.position = Vector2(82, 56)
+	enemy_hp_label.position = Vector2(82, 84)
 	enemy_hp_label.size = Vector2(348, 20)
 	battle_panel.add_child(enemy_hp_label)
 
 	boss_label = _label("BOSS APPROACHING", 24, Color(1.0, 0.38, 0.42))
 	boss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	boss_label.position = Vector2(74, 92)
+	boss_label.position = Vector2(74, 114)
 	boss_label.size = Vector2(364, 34)
 	boss_label.visible = false
 	battle_panel.add_child(boss_label)
 
-	enemy_sprite = _sprite_panel(Color(0.45, 0.8, 1.0), 10)
-	enemy_sprite.position = Vector2(326, 150)
-	enemy_sprite.size = Vector2(106, 120)
+	enemy_sprite = BattleActorViewClass.new()
+	enemy_sprite.setup("enemy", Color(0.45, 0.8, 1.0))
+	enemy_sprite.position = Vector2(318, 146)
+	enemy_sprite.size = Vector2(126, 142)
 	battle_panel.add_child(enemy_sprite)
 
-	hero_sprite = _sprite_panel(Color(0.72, 0.95, 1.0), 10)
-	hero_sprite.position = Vector2(82, 250)
-	hero_sprite.size = Vector2(104, 130)
+	hero_sprite = BattleActorViewClass.new()
+	hero_sprite.setup("hero", Color(0.72, 0.95, 1.0))
+	hero_sprite.position = Vector2(68, 238)
+	hero_sprite.size = Vector2(128, 148)
 	battle_panel.add_child(hero_sprite)
-
-	var hero_core := ColorRect.new()
-	hero_core.color = Color(1.0, 0.95, 0.56, 0.9)
-	hero_core.position = Vector2(36, 12)
-	hero_core.size = Vector2(32, 32)
-	hero_sprite.add_child(hero_core)
 
 	player_hp_bar = _bar(Color(0.3, 0.95, 0.58))
 	player_hp_bar.position = Vector2(42, 405)
@@ -197,10 +225,16 @@ func _build_battle_panel() -> void:
 
 	reward_label = _label("", 22, Color(1.0, 0.88, 0.38))
 	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	reward_label.position = Vector2(56, 292)
+	reward_label.position = Vector2(56, 300)
 	reward_label.size = Vector2(400, 34)
 	reward_label.visible = false
 	battle_panel.add_child(reward_label)
+
+	stage_path_label = _label("", 14, Color(0.84, 0.9, 1.0))
+	stage_path_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stage_path_label.position = Vector2(30, 370)
+	stage_path_label.size = Vector2(452, 24)
+	battle_panel.add_child(stage_path_label)
 
 	clear_label = _label("", 28, Color(1.0, 0.96, 0.74))
 	clear_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -219,10 +253,16 @@ func _build_upgrade_panel() -> void:
 	bottom.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.07, 0.09, 0.16, 0.96), Color(0.8, 0.88, 1.0, 0.14), 8))
 	add_child(bottom)
 
-	var title := _label("Growth", 20, Color(0.92, 0.96, 1.0))
+	var title := _label("Growth Shop", 20, Color(0.92, 0.96, 1.0))
 	title.position = Vector2(14, 8)
-	title.size = Vector2(130, 28)
+	title.size = Vector2(170, 28)
 	bottom.add_child(title)
+
+	var hint := _label("Buy upgrades as soon as they light up.", 13, Color(0.68, 0.76, 0.88))
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hint.position = Vector2(210, 12)
+	hint.size = Vector2(288, 20)
+	bottom.add_child(hint)
 
 	var ids := GameDataClass.get_upgrade_ids()
 	for i in range(ids.size()):
@@ -248,7 +288,7 @@ func _build_upgrade_panel() -> void:
 	save_button.pressed.connect(_on_save_pressed)
 	bottom.add_child(save_button)
 
-	var reset_button := Button.new()
+	reset_button = Button.new()
 	reset_button.text = "New Game"
 	reset_button.position = Vector2(178, 288)
 	reset_button.size = Vector2(154, 30)
@@ -304,13 +344,16 @@ func _update_ui() -> void:
 	level_label.text = "Lv." + str(state.player_level) + "  EXP " + str(state.exp) + "/" + str(state.exp_to_next_level())
 	power_label.text = "Power " + UIControllerClass.format_number(int(stats["power"]))
 	progress_label.text = "Progress " + str(state.current_enemy_progress) + "/" + str(GameDataClass.KILLS_PER_STAGE)
+	goal_label.text = _goal_text()
 	enemy_name_label.text = state.enemy_data["name"]
+	enemy_tag_label.text = _enemy_tag_text()
 	enemy_hp_label.text = UIControllerClass.format_number(int(ceil(state.enemy_hp))) + " / " + UIControllerClass.format_number(int(state.enemy_max_hp))
 	player_hp_label.text = "HP " + UIControllerClass.format_number(int(ceil(state.player_hp))) + " / " + UIControllerClass.format_number(int(stats["max_hp"]))
 	UIControllerClass.set_bar(enemy_hp_bar, state.enemy_hp, state.enemy_max_hp)
 	UIControllerClass.set_bar(player_hp_bar, state.player_hp, float(stats["max_hp"]))
 	UIControllerClass.set_bar(exp_bar, float(state.exp), float(state.exp_to_next_level()))
 	boss_label.visible = state.is_boss
+	stage_path_label.text = _stage_path_text()
 
 	for id in upgrade_buttons.keys():
 		_refresh_upgrade_button(String(id))
@@ -321,7 +364,8 @@ func _refresh_upgrade_button(id: String) -> void:
 	var upgrade := GameDataClass.get_upgrade(id)
 	var level := int(state.upgrade_levels.get(id, 0))
 	var cost: int = state.get_upgrade_cost(id)
-	button.text = String(upgrade["name"]) + "  Lv." + str(level) + "   " + String(upgrade["desc"]) + "   Cost " + UIControllerClass.format_number(cost)
+	var buy_text := "BUY" if state.can_purchase_upgrade(id) else "LOCKED"
+	button.text = "[" + buy_text + "] " + String(upgrade["name"]) + "  Lv." + str(level) + "   " + String(upgrade["desc"]) + "   Cost " + UIControllerClass.format_number(cost)
 	button.disabled = not state.can_purchase_upgrade(id)
 
 
@@ -338,6 +382,19 @@ func _on_save_pressed() -> void:
 
 
 func _on_reset_pressed() -> void:
+	if not reset_pending:
+		reset_pending = true
+		reset_button.text = "Confirm Reset"
+		_show_reward("Tap again to reset")
+		var timer := get_tree().create_timer(3.0)
+		timer.timeout.connect(func():
+			reset_pending = false
+			if reset_button != null:
+				reset_button.text = "New Game"
+		)
+		return
+
+	reset_pending = false
 	SaveManagerClass.delete_save()
 	state.reset()
 	combat.start(state)
@@ -387,14 +444,19 @@ func _on_enemy_spawned() -> void:
 	if state == null:
 		return
 	var color: Color = state.enemy_data["color"]
-	enemy_sprite.add_theme_stylebox_override("panel", UIControllerClass.panel_style(color, Color(1, 1, 1, 0.25), 12))
 	if state.is_boss:
-		enemy_sprite.position = Vector2(292, 120)
-		enemy_sprite.size = Vector2(150, 170)
+		enemy_sprite.setup("boss", color)
+		enemy_sprite.position = Vector2(286, 126)
+		enemy_sprite.size = Vector2(166, 184)
 		_show_reward("Boss Battle")
+	elif state.boss_clear_state:
+		enemy_sprite.setup("gate", color)
+		enemy_sprite.position = Vector2(314, 148)
+		enemy_sprite.size = Vector2(136, 150)
 	else:
-		enemy_sprite.position = Vector2(326, 150)
-		enemy_sprite.size = Vector2(106, 120)
+		enemy_sprite.setup("enemy", color)
+		enemy_sprite.position = Vector2(318, 146)
+		enemy_sprite.size = Vector2(126, 142)
 	_update_ui()
 
 
@@ -423,6 +485,36 @@ func _stage_text() -> String:
 	if state.is_boss:
 		return "Stage " + str(GameDataClass.MAX_STAGE) + " Boss"
 	return "Stage " + str(state.current_stage) + "/" + str(GameDataClass.MAX_STAGE)
+
+
+func _goal_text() -> String:
+	if state.boss_clear_state:
+		return "CLEAR - Dawn Gate secured"
+	if state.is_boss:
+		return "Defeat the region boss"
+	return "Defeat " + str(GameDataClass.KILLS_PER_STAGE - state.current_enemy_progress) + " more to advance"
+
+
+func _enemy_tag_text() -> String:
+	if state.boss_clear_state:
+		return "Post-clear target - rewards continue"
+	if state.is_boss:
+		return "REGION BOSS - high reward"
+	return "Stage " + str(state.current_stage) + " enemy - auto combat active"
+
+
+func _stage_path_text() -> String:
+	var path_text := ""
+	for i in range(1, GameDataClass.MAX_STAGE + 1):
+		if state.boss_clear_state:
+			path_text += "X" if i == GameDataClass.MAX_STAGE else "="
+		elif i < state.current_stage:
+			path_text += "="
+		elif i == state.current_stage:
+			path_text += "B" if state.is_boss else "O"
+		else:
+			path_text += "-"
+	return "Stage Path  " + path_text
 
 
 func _label(text: String, font_size: int, color: Color) -> Label:
