@@ -38,6 +38,12 @@ const UPGRADES := {
 		"desc": "골드 획득",
 		"base_cost": 20,
 		"cost_growth": 1.18
+	},
+	"crit": {
+		"name": "별빛 징표",
+		"desc": "치명 확률",
+		"base_cost": 28,
+		"cost_growth": 1.2
 	}
 }
 
@@ -95,7 +101,7 @@ const CLEAR_TARGET := {
 }
 
 static func get_upgrade_ids() -> Array:
-	return ["attack", "hp", "defense", "speed", "gold"]
+	return ["attack", "hp", "defense", "speed", "gold", "crit"]
 
 
 static func get_upgrade(id: String) -> Dictionary:

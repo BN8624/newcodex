@@ -9,12 +9,16 @@ const UIControllerClass := preload("res://scripts/UIController.gd")
 const EffectsClass := preload("res://scripts/Effects.gd")
 const VerifierClass := preload("res://scripts/Verifier.gd")
 const BattleActorViewClass := preload("res://scripts/BattleActorView.gd")
+const BattleBackdropClass := preload("res://scripts/BattleBackdrop.gd")
+const SoundManagerClass := preload("res://scripts/SoundManager.gd")
 
 const KOREAN_FONT_PATH := "res://malgun.ttf"
+const SKILL_COOLDOWN := 7.0
 
 var state
 var combat
 var korean_font: Font
+var sound
 
 var title_label: Label
 var subtitle_label: Label
@@ -41,9 +45,11 @@ var hero_sprite
 var enemy_sprite
 var upgrade_buttons := {}
 var reset_button: Button
+var skill_button: Button
 var autosave_timer: Timer
 var ui_refresh_timer := 0.0
 var reset_pending := false
+var skill_cooldown := 0.0
 
 
 func _ready() -> void:
@@ -54,6 +60,8 @@ func _ready() -> void:
 
 	custom_minimum_size = Vector2(540, 960)
 	_apply_korean_font_theme()
+	sound = SoundManagerClass.new()
+	add_child(sound)
 	_build_ui()
 	_apply_korean_font_to(self)
 	_load_or_start()
@@ -63,6 +71,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if skill_cooldown > 0.0:
+		var cooldown_delta: float = delta / max(Engine.time_scale, 0.1)
+		skill_cooldown = max(0.0, skill_cooldown - cooldown_delta)
 	ui_refresh_timer += delta
 	if ui_refresh_timer >= 0.12:
 		ui_refresh_timer = 0.0
@@ -156,6 +167,11 @@ func _build_battle_panel() -> void:
 	battle_panel.size = Vector2(512, 442)
 	battle_panel.add_theme_stylebox_override("panel", UIControllerClass.panel_style(Color(0.05, 0.08, 0.13, 0.94), Color(0.8, 0.88, 1.0, 0.18), 8))
 	add_child(battle_panel)
+
+	var backdrop = BattleBackdropClass.new()
+	backdrop.position = Vector2(0, 0)
+	backdrop.size = battle_panel.size
+	battle_panel.add_child(backdrop)
 
 	var moon := ColorRect.new()
 	moon.color = Color(0.7, 0.86, 1.0, 0.12)
@@ -273,10 +289,10 @@ func _build_upgrade_panel() -> void:
 	for i in range(ids.size()):
 		var id := String(ids[i])
 		var button := Button.new()
-		button.position = Vector2(14, 42 + i * 48)
-		button.size = Vector2(484, 42)
+		button.position = Vector2(14, 40 + i * 40)
+		button.size = Vector2(484, 35)
 		button.focus_mode = Control.FOCUS_NONE
-		button.add_theme_font_size_override("font_size", 15)
+		button.add_theme_font_size_override("font_size", 13)
 		button.add_theme_stylebox_override("normal", UIControllerClass.button_style(Color(0.14, 0.18, 0.28)))
 		button.add_theme_stylebox_override("hover", UIControllerClass.button_style(Color(0.18, 0.24, 0.36)))
 		button.add_theme_stylebox_override("pressed", UIControllerClass.button_style(Color(0.22, 0.3, 0.44)))
@@ -287,25 +303,31 @@ func _build_upgrade_panel() -> void:
 
 	var save_button := Button.new()
 	save_button.text = "저장"
-	save_button.position = Vector2(14, 288)
-	save_button.size = Vector2(154, 30)
+	save_button.position = Vector2(254, 288)
+	save_button.size = Vector2(82, 30)
 	save_button.focus_mode = Control.FOCUS_NONE
 	save_button.pressed.connect(_on_save_pressed)
 	bottom.add_child(save_button)
 
 	reset_button = Button.new()
 	reset_button.text = "새 게임"
-	reset_button.position = Vector2(178, 288)
+	reset_button.position = Vector2(344, 288)
 	reset_button.size = Vector2(154, 30)
 	reset_button.focus_mode = Control.FOCUS_NONE
 	reset_button.pressed.connect(_on_reset_pressed)
 	bottom.add_child(reset_button)
 
-	var next_label := _label("다음 목표: 두 번째 지역", 13, Color(0.75, 0.8, 0.9))
-	next_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	next_label.position = Vector2(338, 288)
-	next_label.size = Vector2(160, 30)
-	bottom.add_child(next_label)
+	skill_button = Button.new()
+	skill_button.text = "월광 폭발"
+	skill_button.position = Vector2(14, 288)
+	skill_button.size = Vector2(232, 30)
+	skill_button.focus_mode = Control.FOCUS_NONE
+	skill_button.add_theme_font_size_override("font_size", 15)
+	skill_button.add_theme_stylebox_override("normal", UIControllerClass.button_style(Color(0.22, 0.17, 0.38)))
+	skill_button.add_theme_stylebox_override("pressed", UIControllerClass.button_style(Color(0.32, 0.22, 0.52)))
+	skill_button.add_theme_stylebox_override("disabled", UIControllerClass.button_style(Color(0.09, 0.08, 0.12)))
+	skill_button.pressed.connect(_on_skill_pressed)
+	bottom.add_child(skill_button)
 
 
 func _load_or_start() -> void:
@@ -363,6 +385,14 @@ func _update_ui() -> void:
 	for id in upgrade_buttons.keys():
 		_refresh_upgrade_button(String(id))
 
+	if skill_button != null:
+		if skill_cooldown > 0.0:
+			skill_button.disabled = true
+			skill_button.text = "월광 폭발 " + str(int(ceil(skill_cooldown))) + "초"
+		else:
+			skill_button.disabled = state == null or state.boss_clear_state
+			skill_button.text = "월광 폭발"
+
 
 func _refresh_upgrade_button(id: String) -> void:
 	var button: Button = upgrade_buttons[id]
@@ -376,13 +406,18 @@ func _refresh_upgrade_button(id: String) -> void:
 
 func _on_upgrade_pressed(id: String) -> void:
 	if state.purchase_upgrade(id):
+		var button: Button = upgrade_buttons[id]
+		EffectsClass.button_pop(button)
 		EffectsClass.floating_text(self, "성장 완료", Vector2(270, 642), Color(0.55, 1.0, 0.58), 24)
+		EffectsClass.spark_burst(self, Vector2(270, 662), Color(0.75, 1.0, 0.58, 0.95), 14)
+		_play_sound("level")
 		SaveManagerClass.save_game(state)
 		_update_ui()
 
 
 func _on_save_pressed() -> void:
 	if SaveManagerClass.save_game(state):
+		_play_sound("button")
 		_show_reward("저장 완료")
 
 
@@ -390,6 +425,7 @@ func _on_reset_pressed() -> void:
 	if not reset_pending:
 		reset_pending = true
 		reset_button.text = "초기화 확인"
+		_play_sound("button")
 		_show_reward("한 번 더 누르면 초기화")
 		var timer := get_tree().create_timer(3.0)
 		timer.timeout.connect(func():
@@ -403,7 +439,30 @@ func _on_reset_pressed() -> void:
 	SaveManagerClass.delete_save()
 	state.reset()
 	combat.start(state)
+	_play_sound("button")
 	_show_reward("새 여정 시작")
+	_update_ui()
+
+
+func _on_skill_pressed() -> void:
+	if state == null or skill_cooldown > 0.0 or state.boss_clear_state:
+		return
+	EffectsClass.button_pop(skill_button)
+	var stats: Dictionary = state.get_player_stats()
+	var amount := int(round(float(stats["attack"]) * 3.6 + float(state.player_level) * 3.0))
+	var result: Dictionary = state.damage_enemy(amount)
+	EffectsClass.floating_text(battle_panel, "월광 -" + UIControllerClass.format_number(amount), enemy_sprite.position + Vector2(enemy_sprite.size.x * 0.5, 4), Color(0.72, 0.92, 1.0), 24)
+	EffectsClass.pulse_ring(battle_panel, enemy_sprite.position + enemy_sprite.size * 0.5, Color(0.72, 0.92, 1.0, 0.9), 42.0)
+	EffectsClass.spark_burst(battle_panel, enemy_sprite.position + enemy_sprite.size * 0.5, Color(0.62, 0.86, 1.0, 0.95), 18)
+	EffectsClass.flash(enemy_sprite, Color(0.78, 0.92, 1.0), 0.12)
+	EffectsClass.shake(battle_panel, 7.0)
+	_play_sound("skill")
+	skill_cooldown = SKILL_COOLDOWN
+	if bool(result.get("defeated", false)):
+		_on_enemy_defeated(result)
+		if bool(result.get("boss_clear", false)):
+			_on_boss_cleared(result)
+		_on_enemy_spawned()
 	_update_ui()
 
 
@@ -411,8 +470,11 @@ func _on_enemy_hit(amount: int, critical: bool) -> void:
 	var text := ("치명타 " if critical else "") + "-" + UIControllerClass.format_number(amount)
 	var color := Color(1.0, 0.95, 0.45) if critical else Color(1.0, 0.45, 0.36)
 	EffectsClass.floating_text(battle_panel, text, enemy_sprite.position + Vector2(enemy_sprite.size.x * 0.5, 18), color, 24 if critical else 20)
+	EffectsClass.spark_burst(battle_panel, enemy_sprite.position + enemy_sprite.size * 0.5, color, 10 if critical else 6)
 	EffectsClass.flash(enemy_sprite, Color(1.0, 0.88, 0.88), 0.1)
 	EffectsClass.bump(hero_sprite, Vector2(12, -3), 0.12)
+	EffectsClass.hit_pause(self, 0.035 if critical else 0.02)
+	_play_sound("crit" if critical else "hit")
 	if state.is_boss:
 		EffectsClass.shake(battle_panel, 5.0)
 	_update_ui()
@@ -421,6 +483,7 @@ func _on_enemy_hit(amount: int, critical: bool) -> void:
 func _on_player_hit(amount: int) -> void:
 	EffectsClass.floating_text(battle_panel, "-" + UIControllerClass.format_number(amount), hero_sprite.position + Vector2(50, 4), Color(0.72, 0.9, 1.0), 18)
 	EffectsClass.flash(hero_sprite, Color(0.8, 0.9, 1.0), 0.1)
+	EffectsClass.spark_burst(battle_panel, hero_sprite.position + Vector2(54, 30), Color(0.45, 0.75, 1.0, 0.78), 5)
 	_update_ui()
 
 
@@ -429,12 +492,18 @@ func _on_enemy_defeated(result: Dictionary) -> void:
 	var message := "골드 +" + UIControllerClass.format_number(int(reward["gold"])) + "  경험치 +" + str(int(reward["exp"]))
 	if bool(reward["leveled"]):
 		message += "  레벨 상승"
+		_play_sound("level")
+	else:
+		_play_sound("reward")
+	EffectsClass.pulse_ring(battle_panel, enemy_sprite.position + enemy_sprite.size * 0.5, Color(1.0, 0.86, 0.36, 0.75), 34.0)
 	_show_reward(message)
 	SaveManagerClass.save_game(state)
 	_update_ui()
 
 
 func _on_boss_cleared(result: Dictionary) -> void:
+	_play_sound("clear")
+	EffectsClass.spark_burst(battle_panel, Vector2(256, 198), Color(1.0, 0.88, 0.36, 0.95), 28)
 	_show_clear_banner("지역 클리어\n달샘 폐허 정화 완료\n다음 지역 준비 중")
 	SaveManagerClass.save_game(state)
 	_update_ui()
@@ -453,6 +522,7 @@ func _on_enemy_spawned() -> void:
 		enemy_sprite.setup("boss", color)
 		enemy_sprite.position = Vector2(286, 126)
 		enemy_sprite.size = Vector2(166, 184)
+		_play_sound("boss")
 		_show_reward("보스전 시작")
 	elif state.boss_clear_state:
 		enemy_sprite.setup("gate", color)
@@ -545,6 +615,11 @@ func _sprite_panel(color: Color, radius: int) -> Panel:
 	var panel := Panel.new()
 	panel.add_theme_stylebox_override("panel", UIControllerClass.panel_style(color, Color(1, 1, 1, 0.22), radius))
 	return panel
+
+
+func _play_sound(sound_id: String) -> void:
+	if sound != null:
+		sound.play(sound_id)
 
 
 func _apply_korean_font_theme() -> void:

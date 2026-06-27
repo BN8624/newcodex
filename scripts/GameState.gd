@@ -59,18 +59,21 @@ func get_player_stats() -> Dictionary:
 	var defense_level := int(upgrade_levels.get("defense", 0))
 	var speed_level := int(upgrade_levels.get("speed", 0))
 	var gold_level := int(upgrade_levels.get("gold", 0))
+	var crit_level := int(upgrade_levels.get("crit", 0))
 	var attack := 12.0 + float(player_level - 1) * 2.5 + float(attack_level) * 5.0
 	var max_hp := 110 + (player_level - 1) * 10 + hp_level * 24
 	var defense := defense_level * 2
 	var attack_interval: float = max(0.36, 1.05 - float(speed_level) * 0.035)
 	var gold_multiplier := 1.0 + float(gold_level) * 0.1
-	var power := int(round(attack * 9.0 + float(max_hp) + float(defense) * 18.0 + (1.0 / attack_interval) * 45.0))
+	var crit_chance: float = min(0.42, 0.08 + float(crit_level) * 0.018)
+	var power := int(round(attack * 9.0 + float(max_hp) + float(defense) * 18.0 + (1.0 / attack_interval) * 45.0 + crit_chance * 180.0))
 	return {
 		"attack": attack,
 		"max_hp": max_hp,
 		"defense": defense,
 		"attack_interval": attack_interval,
 		"gold_multiplier": gold_multiplier,
+		"crit_chance": crit_chance,
 		"power": power
 	}
 
@@ -106,7 +109,7 @@ func spawn_enemy() -> void:
 func roll_player_damage() -> Dictionary:
 	var stats: Dictionary = get_player_stats()
 	var damage := float(stats["attack"]) * rng.randf_range(0.92, 1.08)
-	var critical := rng.randf() < 0.08
+	var critical := rng.randf() < float(stats["crit_chance"])
 	if critical:
 		damage *= 1.75
 	return {"damage": int(round(damage)), "critical": critical}

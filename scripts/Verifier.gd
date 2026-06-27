@@ -13,6 +13,7 @@ static func run() -> bool:
 	passed = _check_enemy_defeat_gives_reward() and passed
 	passed = _check_stage_progression() and passed
 	passed = _check_boss_clear() and passed
+	passed = _check_crit_upgrade_changes_chance() and passed
 	passed = _check_save_roundtrip() and passed
 	print("VERIFY_RESULT: " + ("passed" if passed else "failed"))
 	return passed
@@ -66,6 +67,15 @@ static func _check_boss_clear() -> bool:
 	state.enemy_hp = 1.0
 	var result := state.damage_enemy(99999)
 	return _expect(bool(result["boss_clear"]) and state.boss_clear_state, "boss clear sets clear state")
+
+
+static func _check_crit_upgrade_changes_chance() -> bool:
+	var state := GameStateClass.new()
+	state.gold = 999
+	var before := float(state.get_player_stats()["crit_chance"])
+	var bought := state.purchase_upgrade("crit")
+	var after := float(state.get_player_stats()["crit_chance"])
+	return _expect(bought and after > before, "crit upgrade changes chance")
 
 
 static func _check_save_roundtrip() -> bool:
